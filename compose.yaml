@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=admin'
+      - 'POSTGRES_PASSWORD=admin'
+      - 'POSTGRES_USER=librasdb'
+    ports:
+      - '5432:5432'
