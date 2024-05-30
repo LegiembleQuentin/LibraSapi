@@ -1,9 +1,15 @@
+version: '3.8'
 services:
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:16.3'
     environment:
       - 'POSTGRES_DB=admin'
       - 'POSTGRES_PASSWORD=admin'
       - 'POSTGRES_USER=librasdb'
     ports:
-      - '5432:5432'
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
