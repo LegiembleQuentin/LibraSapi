@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
@@ -28,7 +29,7 @@ public class Comment {
     @NotNull
     private AppUser user;
 
-    private float note;
+    private BigDecimal note;
 
     @NotNull
     private LocalDateTime createdAt;
