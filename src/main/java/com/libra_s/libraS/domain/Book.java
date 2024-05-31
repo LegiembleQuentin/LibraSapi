@@ -25,28 +25,34 @@ public class Book {
     private String synopsis;
 
     @NotNull
+    @Column(nullable = false)
     @Convert(converter = ArrayListConverter.class)
     private List<String> names;
 
     @NotNull
+    @Column(nullable = false)
     private LocalDate dateStart;
 
     private LocalDate dateEnd;
 
     @NotNull
+    @Column(nullable = false)
     private int nbVolume;
 
     @NotNull
+    @Column(nullable = false)
     private int nbVisit = 0;
 
     private BigDecimal note;
 
     @NotNull
+    @Column(nullable = false)
     private boolean isCompleted = false;
 
     private String externalId;
 
     @NotNull
+    @Column(nullable = false)
     private LocalDate createdAt;
 
     private LocalDate modifiedAt;

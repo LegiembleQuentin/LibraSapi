@@ -24,24 +24,32 @@ public class AppUser {
     private Long id;
 
     @NotNull
+    @Column(nullable = false)
     private String name;
+
     @NotNull
+    @Column(nullable = false)
     private String fname;
+
     @NotNull
+    @Column(nullable = false)
     private String displayname;
 
     private String img_url;
 
     @NotNull
+    @Column(nullable = false)
     private String password;
 
     @NotNull
+    @Column(nullable = false)
     @Convert(converter = RoleListConverter.class)
     private List<Role> roles;
 
     @NotNull
+    @Column(nullable = false)
     private LocalDateTime created_at;
-    @NotNull
+
     private LocalDateTime modified_at;
 
 //    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

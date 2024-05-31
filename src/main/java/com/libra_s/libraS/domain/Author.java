@@ -18,5 +18,6 @@ public class Author {
     private Long id;
 
     @NotNull
+    @Column(nullable = false)
     private String name;
 }

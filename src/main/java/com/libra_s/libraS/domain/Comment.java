@@ -20,7 +20,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     @NotNull
     private String content;
 
@@ -32,7 +32,10 @@ public class Comment {
     private BigDecimal note;
 
     @NotNull
+    @Column(nullable = false)
     private LocalDateTime createdAt;
+
     @NotNull
+    @Column(nullable = false)
     private LocalDateTime modifiedAt;
 }
