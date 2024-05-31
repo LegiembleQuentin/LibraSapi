@@ -1,9 +1,14 @@
 package com.libra_s.libraS.domain;
 
+import com.libra_s.libraS.domain.converter.RoleListConverter;
+import com.libra_s.libraS.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 @Builder
@@ -25,8 +30,8 @@ public class AppUser {
     private String img_url;
     private String password;
 
-//    @ElementCollection
-//    private List<String> roles;
+    @Convert(converter = RoleListConverter.class)
+    private List<Role> roles;
 
     private LocalDateTime created_at;
     private LocalDateTime modified_at;
@@ -34,6 +39,6 @@ public class AppUser {
 //    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 //    private List<Book> books;
 //
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private List<Comment> comments;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> comments;
 }
