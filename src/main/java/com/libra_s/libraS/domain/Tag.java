@@ -3,6 +3,8 @@ package com.libra_s.libraS.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import javax.validation.constraints.NotNull;
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,5 +17,6 @@ public class Tag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     private String name;
 }

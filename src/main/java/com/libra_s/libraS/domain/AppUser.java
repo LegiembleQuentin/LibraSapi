@@ -25,15 +25,23 @@ public class AppUser {
 
     @NotNull
     private String name;
+    @NotNull
     private String fname;
+    @NotNull
     private String displayname;
+
     private String img_url;
+
+    @NotNull
     private String password;
 
+    @NotNull
     @Convert(converter = RoleListConverter.class)
     private List<Role> roles;
 
+    @NotNull
     private LocalDateTime created_at;
+    @NotNull
     private LocalDateTime modified_at;
 
 //    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
