@@ -1,5 +1,6 @@
 package com.libra_s.libraS.domain;
 
+import com.libra_s.libraS.domain.enums.UserBookStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,4 +26,8 @@ public class UserBookInfo {
     private Book book;
 
     private int note;
+
+    private UserBookStatus status;
+
+    private Integer currentVolume;
 }
