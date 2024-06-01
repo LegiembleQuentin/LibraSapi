@@ -9,5 +9,4 @@ class LibraSApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
