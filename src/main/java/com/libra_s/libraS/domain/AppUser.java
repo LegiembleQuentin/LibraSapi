@@ -7,7 +7,9 @@ import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Builder
@@ -52,9 +54,9 @@ public class AppUser {
 
     private LocalDateTime modified_at;
 
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private List<Book> books;
-//
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Comment> comments;
+
+    @ManyToMany(mappedBy = "likedByUsers")
+    private Set<Comment> likedComments = new HashSet<>();
 }

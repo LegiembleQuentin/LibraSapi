@@ -6,6 +6,8 @@ import lombok.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @NoArgsConstructor
@@ -38,4 +40,12 @@ public class Comment {
     @NotNull
     @Column(nullable = false)
     private LocalDateTime modifiedAt;
+
+    @ManyToMany
+    @JoinTable(
+            name = "comment_likes",
+            joinColumns = @JoinColumn(name = "comment_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<AppUser> likedByUsers = new HashSet<>();
 }

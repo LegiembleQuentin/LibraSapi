@@ -7,7 +7,9 @@ import lombok.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @NoArgsConstructor
@@ -50,6 +52,30 @@ public class Book {
     private boolean isCompleted = false;
 
     private String externalId;
+
+    @ManyToMany
+    @JoinTable(
+            name = "book_tag",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "book_author",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id")
+    )
+    private Set<Author> authors = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "related_books",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "related_book_id")
+    )
+    private Set<Book> relatedBooks = new HashSet<>();
 
     @NotNull
     @Column(nullable = false)
