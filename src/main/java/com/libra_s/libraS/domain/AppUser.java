@@ -28,16 +28,12 @@ public class AppUser implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(nullable = false)
     private String name;
 
     @NotNull
     @Column(nullable = false)
     private String email;
 
-    @NotNull
-    @Column(nullable = false)
     private String fname;
 
     @NotNull
@@ -57,7 +53,7 @@ public class AppUser implements UserDetails {
 
     @NotNull
     @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime created_at = LocalDateTime.now();
 
     private LocalDateTime modified_at;
 
