@@ -7,6 +7,4 @@ public class LoginResponseDto {
     private String token;
 
     private long expiresIn;
-
-    private String role;
 }

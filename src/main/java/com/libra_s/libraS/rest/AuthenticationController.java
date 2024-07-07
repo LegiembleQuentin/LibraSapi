@@ -25,10 +25,21 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<AppUser> register(@RequestBody RegisterUserDto registerUserDto) {
+    public ResponseEntity<LoginResponseDto> register(@RequestBody RegisterUserDto registerUserDto) {
         AppUser registeredUser = authenticationService.signup(registerUserDto);
 
-        return ResponseEntity.ok(registeredUser);
+        LoginUserDto loginUserDto = new LoginUserDto();
+        loginUserDto.setEmail(registerUserDto.getEmail());
+        loginUserDto.setPassword(registerUserDto.getPassword());
+        AppUser authenticatedUser = authenticationService.authenticate(loginUserDto);
+
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+
+        LoginResponseDto loginResponse = new LoginResponseDto();
+        loginResponse.setToken(jwtToken);
+        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/login")
