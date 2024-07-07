@@ -4,9 +4,12 @@ import com.libra_s.libraS.domain.converter.RoleListConverter;
 import com.libra_s.libraS.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,18 +22,18 @@ import java.util.Set;
 @Table(name = "app_user")
 @Data
 @EqualsAndHashCode(of = "id")
-public class AppUser {
+public class AppUser implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(nullable = false)
     private String name;
 
     @NotNull
     @Column(nullable = false)
+    private String email;
+
     private String fname;
 
     @NotNull
@@ -50,7 +53,7 @@ public class AppUser {
 
     @NotNull
     @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime created_at = LocalDateTime.now();
 
     private LocalDateTime modified_at;
 
@@ -59,4 +62,34 @@ public class AppUser {
 
     @ManyToMany(mappedBy = "likedByUsers")
     private Set<Comment> likedComments = new HashSet<>();
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
