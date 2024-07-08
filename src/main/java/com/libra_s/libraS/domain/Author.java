@@ -12,7 +12,9 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "author")
-@Data
+@Getter
+@Setter
+@ToString(exclude = "books")
 @EqualsAndHashCode(of = "id")
 public class Author {
     @Id

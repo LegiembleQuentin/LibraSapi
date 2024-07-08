@@ -10,6 +10,4 @@ public class AuthorDto {
     private Long id;
 
     private String name;
-
-    private Set<BookDto> books = new HashSet<>();
 }

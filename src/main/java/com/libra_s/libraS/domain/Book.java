@@ -16,7 +16,9 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "book")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"tags", "authors", "relatedBooks"})
 @EqualsAndHashCode(of = "id")
 public class Book {
     @Id
