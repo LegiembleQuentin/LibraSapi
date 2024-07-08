@@ -61,6 +61,8 @@ public class Book {
     )
     private Set<Tag> tags = new HashSet<>();
 
+    private String imgUrl;
+
     @ManyToMany
     @JoinTable(
             name = "book_author",
