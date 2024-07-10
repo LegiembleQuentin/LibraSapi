@@ -21,11 +21,8 @@ public class BookController {
 
     private final BookService bookService;
 
-    private final AppUserService appUserService;
-
     public BookController(BookService bookService, AppUserService appUserService) {
         this.bookService = bookService;
-        this.appUserService = appUserService;
     }
 
     @GetMapping("/books")

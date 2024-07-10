@@ -1,10 +1,27 @@
 package com.libra_s.libraS.repository;
 
 import com.libra_s.libraS.domain.Book;
+import com.libra_s.libraS.domain.enums.UserBookStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 
+    List<Book> findTop8ByOrderByNbVisitDesc();
+
+    List<Book> findTop8ByOrderByNoteDesc();
+
+    List<Book> findTop8ByOrderByModifiedAtDesc();
+
+    List<Book> findTop8ByIsCompletedTrueOrderByNoteDescNbVisitDesc();
+
+    List<Book> findTop8ByIsCompletedFalseOrderByNoteDescNbVisitDesc();
+
+    @Query("SELECT ubi.book FROM UserBookInfo ubi WHERE ubi.appUser.id = :userId AND ubi.status = :status")
+    List<Book> findUserBookInProgress(Long userId, UserBookStatus status, Pageable pageable);
 }
