@@ -2,6 +2,7 @@ package com.libra_s.libraS.service;
 
 import com.libra_s.libraS.domain.Book;
 import com.libra_s.libraS.dtos.BookDto;
+import com.libra_s.libraS.dtos.DiscoverPageDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
 import com.libra_s.libraS.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,5 +29,12 @@ public class BookService {
         return books.stream()
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    public DiscoverPageDto getDiscoverPageInfos(Long userId) {
+        DiscoverPageDto discoverPageDto = new DiscoverPageDto();
+
+
+        return discoverPageDto;
     }
 }
