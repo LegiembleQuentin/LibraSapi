@@ -50,5 +50,5 @@ public class BookDto {
 
     private int userCurrentVolume;
 
-    private BigDecimal userMatching;
+    private BigDecimal userMatch;
 }

@@ -116,8 +116,8 @@ public class BookService {
                 .filter(b -> !b.getId().equals(bookId)) // Filtrer le livre actuel
                 .collect(Collectors.toList());
         Set<BookDto> sameAuthorBooksSet = new HashSet<>(sameAuthorBooks);
-
         bookDto.setSameAuthorBooks(sameAuthorBooksSet);
+
         setUserBookInfo(userId, bookId, bookDto);
 
         return bookDto;
@@ -129,7 +129,7 @@ public class BookService {
         Random random = new Random();
         double randomDouble = 65 + (100 - 65) * random.nextDouble();
         BigDecimal randomBigDecimal = BigDecimal.valueOf(randomDouble).setScale(2, BigDecimal.ROUND_HALF_UP);
-        bookDto.setUserMatching(randomBigDecimal);
+        bookDto.setUserMatch(randomBigDecimal);
 
         if(userBookInfo.isPresent()) {
             UserBookInfo userBookInfo1 = userBookInfo.get();
