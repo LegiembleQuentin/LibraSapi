@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,4 +48,24 @@ public class BookController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
         }
     }
+
+    @GetMapping("/book-details/{bookId}")
+    public ResponseEntity<?> getBookDetails(
+            @PathVariable Long bookId
+    ) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AppUser currentUser = (AppUser) authentication.getPrincipal();
+
+            if (currentUser != null) {
+                BookDto result = bookService.getBookDetailsForUser(bookId, currentUser.getId());
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+        }
+    }
+
 }

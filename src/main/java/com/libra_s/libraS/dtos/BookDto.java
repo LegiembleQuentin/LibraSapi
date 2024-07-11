@@ -32,7 +32,7 @@ public class BookDto {
 
     private String imgUrl;
 
-//    private Set<TagDto> tags = new HashSet<>();
+    private Set<TagDto> tags = new HashSet<>();
 
     private Set<AuthorDto> authors = new HashSet<>();
 
@@ -49,4 +49,6 @@ public class BookDto {
     private int userRating;
 
     private int userCurrentVolume;
+
+    private BigDecimal userMatching;
 }

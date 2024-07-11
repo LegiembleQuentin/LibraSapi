@@ -24,4 +24,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("SELECT ubi.book FROM UserBookInfo ubi WHERE ubi.appUser.id = :userId AND ubi.status = :status")
     List<Book> findUserBookInProgress(Long userId, UserBookStatus status, Pageable pageable);
+
+    @Query("SELECT b FROM Book b JOIN b.authors a WHERE a.id IN :authorIds")
+    List<Book> findByAuthorIds(List<Long> authorIds);
 }

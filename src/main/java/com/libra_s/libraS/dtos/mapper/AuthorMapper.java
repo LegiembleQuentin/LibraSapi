@@ -3,7 +3,6 @@ package com.libra_s.libraS.dtos.mapper;
 import com.libra_s.libraS.domain.Author;
 import com.libra_s.libraS.dtos.AuthorDto;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 import java.util.List;
 
