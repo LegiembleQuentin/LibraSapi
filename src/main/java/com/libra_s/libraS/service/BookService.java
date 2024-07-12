@@ -6,12 +6,14 @@ import com.libra_s.libraS.domain.enums.UserBookStatus;
 import com.libra_s.libraS.dtos.AuthorDto;
 import com.libra_s.libraS.dtos.BookDto;
 import com.libra_s.libraS.dtos.DiscoverPageDto;
+import com.libra_s.libraS.dtos.TagDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
 import com.libra_s.libraS.repository.BookRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -139,5 +141,21 @@ public class BookService {
         }
 
         return bookDto;
+    }
+
+    public List<BookDto> getBooksByTags(List<TagDto> tags) {
+        if(tags.isEmpty()) {
+            return bookRepository.findTop20ByOrderByNbVisitDesc().stream()
+                    .map(bookMapper::toDto)
+                    .collect(Collectors.toList());
+        }
+
+        List<String> tagIds = tags.stream().map(TagDto::getName).collect(Collectors.toList());
+
+        List<Book> books = bookRepository.findByTags(tagIds, (long) tagIds.size());
+
+        return books.stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
     }
 }
