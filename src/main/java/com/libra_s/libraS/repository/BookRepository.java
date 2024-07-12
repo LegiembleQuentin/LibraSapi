@@ -18,8 +18,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     List<Book> findTop8ByOrderByNoteDesc();
 
-    List<Book> findTop8ByOrderByModifiedAtDesc();
-
     List<Book> findTop8ByIsCompletedTrueOrderByNoteDescNbVisitDesc();
 
     List<Book> findTop8ByIsCompletedFalseOrderByNoteDescNbVisitDesc();
@@ -31,5 +29,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByAuthorIds(List<Long> authorIds);
 
     @Query("SELECT b FROM Book b JOIN b.tags t WHERE t.name IN :tags GROUP BY b HAVING COUNT(b) = :tagCount")
-List<Book> findByTags(List<String> tags, Long tagCount);
+    List<Book> findByTags(List<String> tags, Long tagCount);
+
+    List<Book> findTop20ByOrderByDateStartDesc();
+    List<Book> findTop8ByOrderByDateStartDesc();
 }
