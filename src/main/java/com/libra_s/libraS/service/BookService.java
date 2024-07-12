@@ -74,7 +74,7 @@ public class BookService {
     }
 
     public List<BookDto> get8LastModifiedBooks() {
-        List<Book> books = bookRepository.findTop8ByOrderByModifiedAtDesc();
+        List<Book> books = bookRepository.findTop8ByOrderByDateStartDesc();
 
         return books.stream()
                 .map(bookMapper::toDto)
@@ -153,6 +153,14 @@ public class BookService {
         List<String> tagIds = tags.stream().map(TagDto::getName).collect(Collectors.toList());
 
         List<Book> books = bookRepository.findByTags(tagIds, (long) tagIds.size());
+
+        return books.stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<BookDto> getRecentBooks() {
+        List<Book> books = bookRepository.findTop20ByOrderByDateStartDesc();
 
         return books.stream()
                 .map(bookMapper::toDto)

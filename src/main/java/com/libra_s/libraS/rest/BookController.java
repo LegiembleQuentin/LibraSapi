@@ -73,4 +73,10 @@ public class BookController {
         List<BookDto> result = bookService.getBooksByTags(tagDtos);
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/books/recent")
+    public ResponseEntity<List<BookDto>> getRecentBooks() {
+        List<BookDto> result = bookService.getRecentBooks();
+        return ResponseEntity.ok(result);
+    }
 }
