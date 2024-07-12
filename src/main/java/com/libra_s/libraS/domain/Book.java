@@ -16,7 +16,9 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "book")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"tags", "authors", "relatedBooks"})
 @EqualsAndHashCode(of = "id")
 public class Book {
     @Id
@@ -60,6 +62,8 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags = new HashSet<>();
+
+    private String imgUrl;
 
     @ManyToMany
     @JoinTable(
