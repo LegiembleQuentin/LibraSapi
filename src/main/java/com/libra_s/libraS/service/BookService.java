@@ -1,5 +1,6 @@
 package com.libra_s.libraS.service;
 
+import com.libra_s.libraS.domain.AppUser;
 import com.libra_s.libraS.domain.Book;
 import com.libra_s.libraS.domain.UserBookInfo;
 import com.libra_s.libraS.domain.enums.UserBookStatus;
@@ -165,5 +166,11 @@ public class BookService {
         return books.stream()
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    public void switchBookInLibrary(Long bookId, AppUser user) {
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book not found"));
+
+        userBookInfoService.switchBookInLibrary(book, user);
     }
 }
