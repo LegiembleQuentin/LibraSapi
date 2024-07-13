@@ -79,4 +79,44 @@ public class BookController {
         List<BookDto> result = bookService.getRecentBooks();
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/book/{bookId}/switch-in-user-library")
+    public ResponseEntity<?> switchBookInUserLibrary(
+            @PathVariable Long bookId
+    ) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AppUser currentUser = (AppUser) authentication.getPrincipal();
+
+            if (currentUser != null) {
+                bookService.switchBookInLibrary(bookId, currentUser);
+                return ResponseEntity.ok("Book switched in library");
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+        }
+    }
+
+    @PostMapping("/book/update")
+    public ResponseEntity<?> updateBook(
+            @RequestBody(required = true) BookDto bookDto
+    ) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AppUser currentUser = (AppUser) authentication.getPrincipal();
+
+            if (currentUser != null) {
+                bookService.updateUserBookInfo(bookDto, currentUser);
+                return ResponseEntity.ok("Book updated");
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+        }
+    }
+
+
 }

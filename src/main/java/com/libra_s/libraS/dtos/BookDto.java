@@ -46,9 +46,9 @@ public class BookDto {
 
     private UserBookStatus userStatus;
 
-    private int userRating;
+    private Integer userRating;
 
-    private int userCurrentVolume;
+    private Integer userCurrentVolume;
 
     private BigDecimal userMatch;
 }
