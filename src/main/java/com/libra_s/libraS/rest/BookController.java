@@ -99,4 +99,24 @@ public class BookController {
         }
     }
 
+    @PostMapping("/book/update")
+    public ResponseEntity<?> updateBook(
+            @RequestBody(required = true) BookDto bookDto
+    ) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AppUser currentUser = (AppUser) authentication.getPrincipal();
+
+            if (currentUser != null) {
+                bookService.updateUserBookInfo(bookDto, currentUser);
+                return ResponseEntity.ok("Book updated");
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+        }
+    }
+
+
 }

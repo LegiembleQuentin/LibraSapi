@@ -44,4 +44,8 @@ public class UserBookInfoService {
 
         userBookInfoRepository.save(userBookInfo);
     }
+
+    public void save(UserBookInfo userBookInfo) {
+        userBookInfoRepository.save(userBookInfo);
+    }
 }

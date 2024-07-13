@@ -173,4 +173,25 @@ public class BookService {
 
         userBookInfoService.switchBookInLibrary(book, user);
     }
+
+    public void updateUserBookInfo(BookDto bookDto, AppUser user) {
+        Optional<UserBookInfo> userBookInfoDb = userBookInfoService.getUserBookInfo(user.getId(), bookDto.getId());
+
+        if(userBookInfoDb.isPresent()) {
+            UserBookInfo userBookInfo = userBookInfoDb.get();
+            userBookInfo.setNote(bookDto.getUserRating());
+            userBookInfo.setStatus(bookDto.getUserStatus());
+            userBookInfo.setCurrentVolume(bookDto.getUserCurrentVolume());
+            userBookInfoService.save(userBookInfo);
+        } else {
+            UserBookInfo userBookInfo = UserBookInfo.builder()
+                    .appUser(user)
+                    .book(bookRepository.findById(bookDto.getId()).get())
+                    .note(bookDto.getUserRating())
+                    .status(bookDto.getUserStatus())
+                    .currentVolume(bookDto.getUserCurrentVolume())
+                    .build();
+            userBookInfoService.save(userBookInfo);
+        }
+    }
 }
