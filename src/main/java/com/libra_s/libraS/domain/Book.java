@@ -87,6 +87,8 @@ public class Book {
 
     private LocalDate modifiedAt;
 
+    private String frenchSearchName;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDate.now();
