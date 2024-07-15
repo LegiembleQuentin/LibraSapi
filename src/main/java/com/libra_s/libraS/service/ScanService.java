@@ -149,17 +149,23 @@ public class ScanService {
     }
 
     public String scan(MultipartFile file) {
-        String imgUrl = upload(file);
-        String jsonResult = requestToReverseImgSearch(imgUrl);
-        List<String> titles = mapJsonResultToList(jsonResult);
+//        String imgUrl = upload(file);
+//        String jsonResult = requestToReverseImgSearch(imgUrl);
+//        List<String> titles = mapJsonResultToList(jsonResult);
 
-        return "";
+//        return "";
 
-//        List<BookDto> bookResult = bookService.searchBooksByList(titles);
-//        BookDto book = bookResult.get(0);
-//
-//        // Return or process the titles as needed
-//        return book.getId().toString();
+        List<String> titles = new ArrayList<>();
+        titles.add("Makoto yukimura");
+        titles.add("vinland");
+        titles.add("saga");
+        titles.add("vinland saga tome 23");
+        titles.add("vinland saga T01");
+
+        BookDto bookResult = bookService.searchBooksByFrenchName("vinland saga tome 23");
+
+        // Return or process the titles as needed
+        return bookResult.getId().toString();
     }
 
     public List<String> mapJsonResultToList(String jsonResult) {

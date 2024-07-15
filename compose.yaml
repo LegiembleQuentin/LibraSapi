@@ -11,5 +11,12 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  elasticsearch:
+    image: 'elasticsearch:7.16.3'
+    environment:
+      - 'discovery.type=single-node'
+    ports:
+      - "9200:9200"
+
 volumes:
   postgres-data:

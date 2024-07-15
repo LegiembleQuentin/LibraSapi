@@ -3,6 +3,9 @@ package com.libra_s.libraS.domain;
 import com.libra_s.libraS.domain.converter.ArrayListConverter;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -12,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 @Builder
+@Document(indexName = "books")
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -23,6 +27,7 @@ import java.util.Set;
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @org.springframework.data.annotation.Id
     private Long id;
 
     @Column(columnDefinition = "TEXT")
@@ -87,6 +92,7 @@ public class Book {
 
     private LocalDate modifiedAt;
 
+    @Field(type = FieldType.Text, fielddata = true)
     private String frenchSearchName;
 
     @PrePersist
@@ -99,5 +105,5 @@ public class Book {
         this.modifiedAt = LocalDate.now();
     }
 
-    
+
 }

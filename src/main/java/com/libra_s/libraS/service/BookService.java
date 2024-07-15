@@ -3,12 +3,14 @@ package com.libra_s.libraS.service;
 import com.libra_s.libraS.domain.AppUser;
 import com.libra_s.libraS.domain.Book;
 import com.libra_s.libraS.domain.UserBookInfo;
+import com.libra_s.libraS.domain.elasticsearch.BookIndex;
 import com.libra_s.libraS.domain.enums.UserBookStatus;
 import com.libra_s.libraS.dtos.AuthorDto;
 import com.libra_s.libraS.dtos.BookDto;
 import com.libra_s.libraS.dtos.DiscoverPageDto;
 import com.libra_s.libraS.dtos.TagDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
+import com.libra_s.libraS.elasticsearch.BookSearchRepository;
 import com.libra_s.libraS.repository.BookRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,12 +27,15 @@ public class BookService {
 
     private final BookRepository bookRepository;
 
+    private final BookSearchRepository bookSearchRepository;
+
     private final BookMapper bookMapper;
 
-    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, BookMapper bookMapper) {
+    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, BookMapper bookMapper, BookSearchRepository bookSearchRepository) {
         this.userBookInfoService = userBookInfoService;
         this.bookRepository = bookRepository;
         this.bookMapper = bookMapper;
+        this.bookSearchRepository = bookSearchRepository;
     }
 
     public List<BookDto> getBooks() {
@@ -194,11 +199,38 @@ public class BookService {
         }
     }
 
-//    public List<BookDto> searchBooksByList(List<String> titles) {
-//        List<Book> books = bookSearchRepository.findByFrenchSearchNameIn(titles);
-//
-//        return books.stream()
-//                .map(bookMapper::toDto)
+    public List<BookDto> searchBooksByList(List<String> titles) {
+        List<BookIndex> bookIndexes = bookSearchRepository.findByFrenchSearchName(titles);
+
+        List<Book> books = bookRepository.findAllById(bookIndexes.stream().map(BookIndex::getId).collect(Collectors.toList()));
+
+        List<BookDto> bookDtos = books.stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
+        return bookDtos;
+    }
+
+    public BookDto searchBooksByFrenchName(String search){
+        List<BookIndex> bookIndexes = bookSearchRepository.findByFrenchSearchName(search);
+        if (bookIndexes.isEmpty()) {
+            return null;
+        }
+        BookIndex book = bookIndexes.get(0);
+        return bookRepository.findById(book.getId())
+                .map(bookMapper::toDto)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+    }
+
+//    public void indexAllBooksInElasticsearch() {
+//        List<Book> books = bookRepository.findAll();
+//        List<BookIndex> bookIndices = books.stream()
+//                .map(book -> {
+//                    BookIndex bookIndex = new BookIndex();
+//                    bookIndex.setId(book.getId());
+//                    bookIndex.setFrenchSearchName(book.getFrenchSearchName());
+//                    return bookIndex;
+//                })
 //                .collect(Collectors.toList());
+//        bookSearchRepository.saveAll(bookIndices);
 //    }
 }
