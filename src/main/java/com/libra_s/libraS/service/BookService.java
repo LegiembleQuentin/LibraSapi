@@ -194,6 +194,16 @@ public class BookService {
         }
     }
 
+    public BookDto searchBookByFrenchTitles(List<String> cleanedTitles) {
+        for (String title : cleanedTitles) {
+            Optional<Book> book = bookRepository.findByFrenchSearchName(title);
+            if (book.isPresent()) {
+                return bookMapper.toDto(book.get());
+            }
+        }
+        return null;
+    }
+
 //    public List<BookDto> searchBooksByList(List<String> titles) {
 //        List<Book> books = bookSearchRepository.findByFrenchSearchNameIn(titles);
 //

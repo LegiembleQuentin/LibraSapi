@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ScanService {
@@ -153,13 +154,15 @@ public class ScanService {
         String jsonResult = requestToReverseImgSearch(imgUrl);
         List<String> titles = mapJsonResultToList(jsonResult);
 
-        return "";
+        List<String> cleanedTitles = cleanSearchTitles(titles);
+        List<String> sortedTitles = groupAndSortTitles(cleanedTitles);
 
-//        List<BookDto> bookResult = bookService.searchBooksByList(titles);
-//        BookDto book = bookResult.get(0);
-//
-//        // Return or process the titles as needed
-//        return book.getId().toString();
+        BookDto bookDto = bookService.searchBookByFrenchTitles(sortedTitles);
+        if (bookDto != null) {
+            return bookDto.getId().toString();
+        }
+
+        return "";
     }
 
     public List<String> mapJsonResultToList(String jsonResult) {
@@ -202,5 +205,54 @@ public class ScanService {
         }
 
         return titles;
+    }
+
+    public static List<String> cleanSearchTitles(List<String> titles) {
+        //on fait comme on peut car j'arrive pas à config elasticsearch v5.0.x
+        List<String> cleanedTitles = new ArrayList<>();
+
+        // Les termes à enlever
+        String[] termsToRemove = {"volume", "vol", "tome", "mangadex", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
+
+        for (String title : titles) {
+            String cleanedTitle = title.toLowerCase();
+
+            // Enlever les termes spécifiés
+            for (String term : termsToRemove) {
+                cleanedTitle = cleanedTitle.split(term)[0];
+            }
+
+            // Enlever les espaces au début et à la fin
+            cleanedTitle = cleanedTitle.trim();
+
+            // Enlever les caractères indésirables à la fin
+            cleanedTitle = cleanedTitle.replaceAll("[\\-._]+$", "").trim();
+
+            cleanedTitles.add(cleanedTitle);
+        }
+
+        return cleanedTitles;
+    }
+
+    public static List<String> groupAndSortTitles(List<String> cleanedTitles) {
+        //on les trie par ordre d'occurrence pour avoir les titres les plus fréquents en premier pour éviter les requetes indesirables
+        Map<String, Integer> titleCountMap = new HashMap<>();
+        for (String title : cleanedTitles) {
+            titleCountMap.put(title, titleCountMap.getOrDefault(title, 0) + 1);
+        }
+
+        List<String> sortedTitles = titleCountMap.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .map(Map.Entry::getKey)
+                .toList();
+
+        List<String> finalList = new ArrayList<>();
+        for (String title : sortedTitles) {
+            for (int i = 0; i < titleCountMap.get(title); i++) {
+                finalList.add(title);
+            }
+        }
+
+        return finalList;
     }
 }
