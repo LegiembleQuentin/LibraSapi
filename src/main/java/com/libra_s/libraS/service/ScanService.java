@@ -8,7 +8,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.libra_s.libraS.domain.AppUser;
+import com.libra_s.libraS.dtos.BookDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -153,8 +153,13 @@ public class ScanService {
         String jsonResult = requestToReverseImgSearch(imgUrl);
         List<String> titles = mapJsonResultToList(jsonResult);
 
-        // Return or process the titles as needed
-        return String.join(", ", titles);
+        return "";
+
+//        List<BookDto> bookResult = bookService.searchBooksByList(titles);
+//        BookDto book = bookResult.get(0);
+//
+//        // Return or process the titles as needed
+//        return book.getId().toString();
     }
 
     public List<String> mapJsonResultToList(String jsonResult) {

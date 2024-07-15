@@ -14,7 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -194,4 +193,12 @@ public class BookService {
             userBookInfoService.save(userBookInfo);
         }
     }
+
+//    public List<BookDto> searchBooksByList(List<String> titles) {
+//        List<Book> books = bookSearchRepository.findByFrenchSearchNameIn(titles);
+//
+//        return books.stream()
+//                .map(bookMapper::toDto)
+//                .collect(Collectors.toList());
+//    }
 }
