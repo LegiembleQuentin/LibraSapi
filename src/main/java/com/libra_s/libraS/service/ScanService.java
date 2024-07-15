@@ -45,6 +45,8 @@ public class ScanService {
 
     private String bucketName = "libras-ab46c.appspot.com";
 
+    private String folderName = "scans";
+
     private static final String API_URL = "https://serpapi.com/search";
 
     private final ResourceLoader resourceLoader;
@@ -112,7 +114,8 @@ public class ScanService {
 
     public String uploadFile(File file, String fileName) throws IOException {
         String uuid = UUID.randomUUID().toString();
-        BlobId blobId = BlobId.of(bucketName, fileName);
+        String fullFilePath = folderName + "/" + fileName; // Construction du chemin complet du fichier
+        BlobId blobId = BlobId.of(bucketName, fullFilePath);
 
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType("image/jpeg")
@@ -125,7 +128,7 @@ public class ScanService {
         storage.create(blobInfo, Files.readAllBytes(file.toPath()));
 
         String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/" + bucketName + "/o/%s?alt=media&token=" + uuid;
-        return String.format(DOWNLOAD_URL, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+        return String.format(DOWNLOAD_URL, URLEncoder.encode(fullFilePath, StandardCharsets.UTF_8));
     }
 
     private File convertToFile(MultipartFile multipartFile, String fileName) throws IOException {
@@ -157,7 +160,7 @@ public class ScanService {
         List<String> cleanedTitles = cleanSearchTitles(titles);
         List<String> sortedTitles = groupAndSortTitles(cleanedTitles);
 
-        BookDto bookDto = bookService.searchBookByFrenchTitles(sortedTitles);
+        BookDto bookDto = bookService.findByFrenchSearchName(sortedTitles.get(0));
         if (bookDto != null) {
             return bookDto.getId().toString();
         }
@@ -211,31 +214,32 @@ public class ScanService {
         //on fait comme on peut car j'arrive pas à config elasticsearch v5.0.x
         List<String> cleanedTitles = new ArrayList<>();
 
-        // Les termes à enlever
+        //les termes à enlever
         String[] termsToRemove = {"volume", "vol", "tome", "mangadex", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
 
         for (String title : titles) {
             String cleanedTitle = title.toLowerCase();
 
-            // Enlever les termes spécifiés
+            //enlever les termes précisés
             for (String term : termsToRemove) {
                 cleanedTitle = cleanedTitle.split(term)[0];
             }
-
-            // Enlever les espaces au début et à la fin
             cleanedTitle = cleanedTitle.trim();
 
-            // Enlever les caractères indésirables à la fin
+            //on vire les caractères indésirables en fin de string
             cleanedTitle = cleanedTitle.replaceAll("[\\-._]+$", "").trim();
 
-            cleanedTitles.add(cleanedTitle);
+            //et on prend pas les titres vides
+            if (!cleanedTitle.isEmpty()) {
+                cleanedTitles.add(cleanedTitle);
+            }
         }
 
         return cleanedTitles;
     }
 
     public static List<String> groupAndSortTitles(List<String> cleanedTitles) {
-        //on les trie par ordre d'occurrence pour avoir les titres les plus fréquents en premier pour éviter les requetes indesirables
+        //on les trie par ordre d'occurrence pour avoir les titres les plus fréquents en premier
         Map<String, Integer> titleCountMap = new HashMap<>();
         for (String title : cleanedTitles) {
             titleCountMap.put(title, titleCountMap.getOrDefault(title, 0) + 1);
