@@ -8,6 +8,7 @@ import com.libra_s.libraS.repository.UserBookInfoRepository;
 import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -47,5 +48,11 @@ public class UserBookInfoService {
 
     public void save(UserBookInfo userBookInfo) {
         userBookInfoRepository.save(userBookInfo);
+    }
+
+    public List<UserBookInfo> getUserBookInfos(Long userId) {
+        List<UserBookInfo> result = userBookInfoRepository.findByAppUserId(userId);
+
+        return result;
     }
 }
