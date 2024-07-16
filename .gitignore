@@ -31,5 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
-.src.main.resources.application.properties
-.src.main.resources.config.firebase-service-account.json
+
+# Ignore application.properties and Firebase service account JSON
+src/main/resources/application.properties
+src/main/resources/config/firebase-service-account.json

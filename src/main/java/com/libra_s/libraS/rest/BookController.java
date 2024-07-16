@@ -118,5 +118,22 @@ public class BookController {
         }
     }
 
+    @GetMapping("/book/by-user")
+    public ResponseEntity<?> getBooksByUser() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AppUser currentUser = (AppUser) authentication.getPrincipal();
+
+            if (currentUser != null) {
+                List<BookDto> result = bookService.getBooksByUser(currentUser.getId());
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+        }
+    }
+
 
 }

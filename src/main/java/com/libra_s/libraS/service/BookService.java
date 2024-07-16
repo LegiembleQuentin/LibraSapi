@@ -208,4 +208,23 @@ public class BookService {
         }
         return null;
     }
+
+    public List<BookDto> getBooksByUser(Long id) {
+        List<Book> books = bookRepository.findBooksByUser(id);
+        List<BookDto> bookDtos = books.stream().map(bookMapper::toDto).toList();
+
+        List<UserBookInfo> userBookInfos = userBookInfoService.getUserBookInfos(id);
+        Map<Long, UserBookInfo> userBookInfoMap = userBookInfos.stream().collect(Collectors.toMap(ubi -> ubi.getBook().getId(), ubi -> ubi));
+
+        for (BookDto bookDto : bookDtos) {
+            UserBookInfo userBookInfo = userBookInfoMap.get(bookDto.getId());
+            if (userBookInfo != null) {
+                bookDto.setUserStatus(userBookInfo.getStatus());
+                bookDto.setUserRating(userBookInfo.getNote());
+                bookDto.setUserCurrentVolume(userBookInfo.getCurrentVolume());
+            }
+        }
+
+        return bookDtos;
+    }
 }

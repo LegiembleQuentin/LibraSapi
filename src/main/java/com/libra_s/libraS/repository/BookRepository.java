@@ -37,4 +37,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findTop8ByOrderByDateStartDesc();
 
     Optional<Book> findByFrenchSearchName(String title);
+
+    @Query("SELECT ubi.book FROM UserBookInfo ubi WHERE ubi.appUser.id = :userId")
+    List<Book> findBooksByUser(Long userId);
 }
