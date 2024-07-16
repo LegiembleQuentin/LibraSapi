@@ -160,7 +160,7 @@ public class ScanService {
         List<String> cleanedTitles = cleanSearchTitles(titles);
         List<String> sortedTitles = groupAndSortTitles(cleanedTitles);
 
-        BookDto bookDto = bookService.findByFrenchSearchName(sortedTitles.get(0));
+        BookDto bookDto = bookService.searchBookByFrenchTitles(sortedTitles);
         if (bookDto != null) {
             return bookDto.getId().toString();
         }
