@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ScanService {
@@ -43,6 +44,8 @@ public class ScanService {
 //    private String jsonFileName = "firebase-service-account.json";
 
     private String bucketName = "libras-ab46c.appspot.com";
+
+    private String folderName = "scans";
 
     private static final String API_URL = "https://serpapi.com/search";
 
@@ -111,7 +114,8 @@ public class ScanService {
 
     public String uploadFile(File file, String fileName) throws IOException {
         String uuid = UUID.randomUUID().toString();
-        BlobId blobId = BlobId.of(bucketName, fileName);
+        String fullFilePath = folderName + "/" + fileName; // Construction du chemin complet du fichier
+        BlobId blobId = BlobId.of(bucketName, fullFilePath);
 
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType("image/jpeg")
@@ -124,7 +128,7 @@ public class ScanService {
         storage.create(blobInfo, Files.readAllBytes(file.toPath()));
 
         String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/" + bucketName + "/o/%s?alt=media&token=" + uuid;
-        return String.format(DOWNLOAD_URL, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+        return String.format(DOWNLOAD_URL, URLEncoder.encode(fullFilePath, StandardCharsets.UTF_8));
     }
 
     private File convertToFile(MultipartFile multipartFile, String fileName) throws IOException {
@@ -153,13 +157,15 @@ public class ScanService {
         String jsonResult = requestToReverseImgSearch(imgUrl);
         List<String> titles = mapJsonResultToList(jsonResult);
 
-        return "";
+        List<String> cleanedTitles = cleanSearchTitles(titles);
+        List<String> sortedTitles = groupAndSortTitles(cleanedTitles);
 
-//        List<BookDto> bookResult = bookService.searchBooksByList(titles);
-//        BookDto book = bookResult.get(0);
-//
-//        // Return or process the titles as needed
-//        return book.getId().toString();
+        BookDto bookDto = bookService.searchBookByFrenchTitles(sortedTitles);
+        if (bookDto != null) {
+            return bookDto.getId().toString();
+        }
+
+        return "";
     }
 
     public List<String> mapJsonResultToList(String jsonResult) {
@@ -202,5 +208,55 @@ public class ScanService {
         }
 
         return titles;
+    }
+
+    public static List<String> cleanSearchTitles(List<String> titles) {
+        //on fait comme on peut car j'arrive pas à config elasticsearch v5.0.x
+        List<String> cleanedTitles = new ArrayList<>();
+
+        //les termes à enlever
+        String[] termsToRemove = {"volume", "vol", "tome", "mangadex", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
+
+        for (String title : titles) {
+            String cleanedTitle = title.toLowerCase();
+
+            //enlever les termes précisés
+            for (String term : termsToRemove) {
+                cleanedTitle = cleanedTitle.split(term)[0];
+            }
+            cleanedTitle = cleanedTitle.trim();
+
+            //on vire les caractères indésirables en fin de string
+            cleanedTitle = cleanedTitle.replaceAll("[\\-._]+$", "").trim();
+
+            //et on prend pas les titres vides
+            if (!cleanedTitle.isEmpty()) {
+                cleanedTitles.add(cleanedTitle);
+            }
+        }
+
+        return cleanedTitles;
+    }
+
+    public static List<String> groupAndSortTitles(List<String> cleanedTitles) {
+        //on les trie par ordre d'occurrence pour avoir les titres les plus fréquents en premier
+        Map<String, Integer> titleCountMap = new HashMap<>();
+        for (String title : cleanedTitles) {
+            titleCountMap.put(title, titleCountMap.getOrDefault(title, 0) + 1);
+        }
+
+        List<String> sortedTitles = titleCountMap.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .map(Map.Entry::getKey)
+                .toList();
+
+        List<String> finalList = new ArrayList<>();
+        for (String title : sortedTitles) {
+            for (int i = 0; i < titleCountMap.get(title); i++) {
+                finalList.add(title);
+            }
+        }
+
+        return finalList;
     }
 }

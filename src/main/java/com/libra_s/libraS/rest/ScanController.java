@@ -21,23 +21,6 @@ public class ScanController {
         this.scanService = scanService;
     }
 
-//    @GetMapping("/scan")
-//    public ResponseEntity<String>  scan(@RequestParam("imgUrl") String imgUrl) {
-//        try {
-//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//            AppUser currentUser = (AppUser) authentication.getPrincipal();
-//
-//            if (currentUser != null) {
-//                String result = scanService.scan(imgUrl, currentUser);
-//                return ResponseEntity.ok(result);
-//            } else {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
-//            }
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
-//        }
-//    }
-
     @PostMapping("/scan")
     public ResponseEntity<String> handleFileUpload(@RequestParam("image") MultipartFile file) {
         if (file.isEmpty()) {

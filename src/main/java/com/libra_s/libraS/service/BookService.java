@@ -194,11 +194,18 @@ public class BookService {
         }
     }
 
-//    public List<BookDto> searchBooksByList(List<String> titles) {
-//        List<Book> books = bookSearchRepository.findByFrenchSearchNameIn(titles);
-//
-//        return books.stream()
-//                .map(bookMapper::toDto)
-//                .collect(Collectors.toList());
-//    }
+    public BookDto findByFrenchSearchName(String name) {
+        Optional<Book> book = bookRepository.findByFrenchSearchName(name);
+        return book.map(bookMapper::toDto).orElse(null);
+    }
+
+    public BookDto searchBookByFrenchTitles(List<String> cleanedTitles) {
+        for (String title : cleanedTitles) {
+            Optional<Book> book = bookRepository.findByFrenchSearchName(title);
+            if (book.isPresent()) {
+                return bookMapper.toDto(book.get());
+            }
+        }
+        return null;
+    }
 }
