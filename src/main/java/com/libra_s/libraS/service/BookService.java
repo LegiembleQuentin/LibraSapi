@@ -235,4 +235,31 @@ public class BookService {
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    public void setBaseBooksDescription() {
+        // methode pour mettre à jour les données de base des livres présents de base lors de la mise en ligne car l'utf-8 n'est pas pris en compte lors de l'init sql
+        List<Book> books = bookRepository.findAll();
+
+        Map<String, String> descriptions = new HashMap<>();
+        descriptions.put("trigun", "Sur la planète \"brûlée par les rayons deux soleils\", Vash the Stampede, a.k.a. le typhon humanoïde, est une tête recherchée et mise à prix pour la modique somme de $$60,000,000,000 (entendez par double dollars). Dans ce monde sans foi ni loi, les habitants vivent d'une manière rustique, contrastant largement avec les restes de leur héritage d'une technologie avancée.");
+        descriptions.put("ascension", "Buntaro Mori, jeune lycéen solitaire et renfermé, est défié par un camarade de classe fan d'escalade. Le défi ? Escalader le lycée ! C'est alors que, en grimpant le long d'une tuile bien placée, Buntaro se découvre une passion et un don. Après avoir escaladé sans trop de mal le lycée, ce dernier est tout de suite repéré par son prof d'anglais, lui-même fan de grimpe extrême. Grâce à l'escalade, Buntaro va se découvrir un but dans la vie, et se perfectionner dans ce domaine, jusqu'à atteindre les cieux...");
+        descriptions.put("dai dark", "Dai Dark est une série de science-fiction sombre par Q Hayashida, connue pour ses personnages excentriques et son cadre lugubre.");
+        descriptions.put("dorohedoro", "Dorohedoro est un manga urbain fantastique et granuleux se déroulant dans un monde où magie et violence se rencontrent.");
+        descriptions.put("vagabond", "Vagabond est un classique des récits de samouraïs qui suit la vie et les luttes du légendaire épéiste Musashi Miyamoto.");
+        descriptions.put("vinland saga", "Vinland Saga est un roman historique sur les vikings. On y suivra Thorfinn et son voyage vers le \"Vinland\" la terre fertile et sans guerre.");
+        descriptions.put("watchmen", "Watchmen est un roman graphique qui déconstruit le genre des super-héros avec une narration complexe et des thèmes matures.");
+        descriptions.put("slam dunk", "Slam Dunk est un manga sportif sur une équipe de basket-ball au lycée et son parcours vers le sommet.");
+        descriptions.put("bu tian ge", "Bu Tian Ge est une série fantastique captivante qui explore les aventures légendaires des Sky Pacers et leurs aventures mystiques.");
+        descriptions.put("the ravages of times", "The Ravages Of Times est un drame historique fascinant situé dans la Chine antique, mettant en scène les luttes de pouvoir et les batailles stratégiques.");
+        descriptions.put("blame", "Blame est un manga cyberpunk dystopique se déroulant dans une mégastructure vaste et labyrinthique.");
+
+        for (Book book : books) {
+            String key = book.getFrenchSearchName();
+            if (descriptions.containsKey(key)) {
+                book.setSynopsis(descriptions.get(key));
+            }
+        }
+
+        bookRepository.saveAll(books);
+    }
 }

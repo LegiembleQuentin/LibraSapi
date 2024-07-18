@@ -66,6 +66,16 @@ public class BookController {
         }
     }
 
+    @PostMapping("/books/set-base-desc")
+    public ResponseEntity<?> setBaseBooks() {
+        try {
+            bookService.setBaseBooksDescription();
+            return ResponseEntity.ok("Base books set");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("error while setting books base description");
+        }
+    }
+
     @PostMapping("/books/by-tags")
     public ResponseEntity<List<BookDto>> getBooksByTags(
             @RequestBody(required = true) List<TagDto> tagDtos
