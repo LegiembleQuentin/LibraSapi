@@ -5,6 +5,7 @@ import com.libra_s.libraS.domain.enums.UserBookStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -40,4 +41,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("SELECT ubi.book FROM UserBookInfo ubi WHERE ubi.appUser.id = :userId")
     List<Book> findBooksByUser(Long userId);
+
+    @Query("SELECT b FROM Book b JOIN b.authors a WHERE " +
+            "b.frenchSearchName LIKE %:search% OR " +
+            "a.name LIKE %:search% OR " +
+            "b.synopsis LIKE %:search%")
+    List<Book> search(@Param("search") String search);
 }

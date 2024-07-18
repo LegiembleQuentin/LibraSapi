@@ -227,4 +227,12 @@ public class BookService {
 
         return bookDtos;
     }
+
+    public List<BookDto> search(String search) {
+        List<Book> books = bookRepository.search(search);
+
+        return books.stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }
