@@ -21,12 +21,7 @@ Le projet est divisé en deux principaux composants :
 
 ### Étape 1 : Cloner le Dépôt
 
-Clonez le dépôt du projet depuis GitHub :
-
-```sh
-git clone https://github.com/votre-utilisateur/votre-repo.git
-cd votre-repo
-```
+Clonez le dépôt du projet depuis GitHub
 
 ### Étape 2 : Configurer Firebase
 
