@@ -6,10 +6,12 @@ import com.libra_s.libraS.domain.UserBookInfo;
 import com.libra_s.libraS.domain.enums.UserBookStatus;
 import com.libra_s.libraS.dtos.AuthorDto;
 import com.libra_s.libraS.dtos.BookDto;
+import com.libra_s.libraS.dtos.BookFilterDto;
 import com.libra_s.libraS.dtos.DiscoverPageDto;
 import com.libra_s.libraS.dtos.TagDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
 import com.libra_s.libraS.repository.BookRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.JpaSort;
@@ -36,6 +38,18 @@ public class BookService {
     public List<BookDto> getBooks() {
         List<Book> books = bookRepository.findAll();
 
+        return books.stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public Page<BookDto> getBooksWithFilters(BookFilterDto filter, Pageable pageable) {
+        Page<Book> booksPage = bookRepository.findBooksWithFilters(filter, pageable);
+        return booksPage.map(bookMapper::toDto);
+    }
+
+    public List<BookDto> getBooksWithFilters(BookFilterDto filter) {
+        List<Book> books = bookRepository.findBooksWithFilters(filter);
         return books.stream()
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
