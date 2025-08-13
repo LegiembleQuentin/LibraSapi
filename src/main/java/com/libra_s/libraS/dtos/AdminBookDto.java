@@ -55,4 +55,11 @@ public class AdminBookDto {
     private Integer usersNotStarted;
     private Double averageProgress;
     private Double completionRate;
+    
+    private Integer activeUsersLast7Days;
+    private Integer activeUsersLast30Days;
+    private Double engagementTrend;
+    private Integer activeUsersThisMonth;
+    private Integer activeUsersLastMonth;
+    private Integer newReadersThisMonth;
 }

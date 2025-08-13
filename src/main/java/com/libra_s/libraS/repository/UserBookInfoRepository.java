@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Repository
 public interface UserBookInfoRepository extends JpaRepository<UserBookInfo, Long> {
@@ -25,4 +26,10 @@ public interface UserBookInfoRepository extends JpaRepository<UserBookInfo, Long
 
     @Query("SELECT COUNT(ubi) FROM UserBookInfo ubi WHERE ubi.book.id = :bookId AND ubi.status = :status")
     Long countByBookIdAndStatus(@Param("bookId") Long bookId, @Param("status") UserBookStatus status);
+    
+    @Query("SELECT COUNT(ubi) FROM UserBookInfo ubi WHERE ubi.book.id = :bookId AND ubi.modifiedAt >= :sinceDate")
+    Long countByBookIdAndModifiedAfter(@Param("bookId") Long bookId, @Param("sinceDate") LocalDateTime sinceDate);
+    
+    @Query("SELECT COUNT(ubi) FROM UserBookInfo ubi WHERE ubi.book.id = :bookId AND ubi.modifiedAt >= :startDate AND ubi.modifiedAt < :endDate")
+    Long countByBookIdAndModifiedBetween(@Param("bookId") Long bookId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

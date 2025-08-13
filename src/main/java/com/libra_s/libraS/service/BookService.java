@@ -272,6 +272,13 @@ public class BookService {
             adminBookDto.setAverageProgress(stats.getAverageProgress());
             adminBookDto.setCompletionRate(stats.getCompletionRate());
             
+            adminBookDto.setActiveUsersLast7Days(stats.getActiveUsersLast7Days());
+            adminBookDto.setActiveUsersLast30Days(stats.getActiveUsersLast30Days());
+            adminBookDto.setEngagementTrend(stats.getEngagementTrend());
+            adminBookDto.setActiveUsersThisMonth(stats.getActiveUsersThisMonth());
+            adminBookDto.setActiveUsersLastMonth(stats.getActiveUsersLastMonth());
+            adminBookDto.setNewReadersThisMonth(stats.getNewReadersThisMonth());
+            
             return adminBookDto;
         }
         return null;

@@ -13,4 +13,11 @@ public class BookStatistics {
     private int usersNotStarted;
     private double averageProgress;
     private double completionRate;
+    
+    private int activeUsersLast7Days;
+    private int activeUsersLast30Days;
+    private double engagementTrend;
+    private int activeUsersThisMonth;
+    private int activeUsersLastMonth;
+    private int newReadersThisMonth;
 }
