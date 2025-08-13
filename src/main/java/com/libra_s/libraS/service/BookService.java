@@ -250,6 +250,11 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
+    public BookDto getBookById(Long id) {
+        Optional<Book> book = bookRepository.findById(id);
+        return book.map(bookMapper::toDto).orElse(null);
+    }
+
     public void setBaseBooksDescription() {
         // methode pour mettre à jour les données de base des livres présents de base lors de la mise en ligne car l'utf-8 n'est pas pris en compte lors de l'init sql
         List<Book> books = bookRepository.findAll();

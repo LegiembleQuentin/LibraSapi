@@ -76,4 +76,23 @@ public class AdminBookController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getBookById(@PathVariable Long id) {
+        try {
+            BookDto book = bookService.getBookById(id);
+            if (book != null) {
+                return ResponseEntity.ok(book);
+            } else {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Livre non trouvé");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur lors de la récupération du livre");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
 }
