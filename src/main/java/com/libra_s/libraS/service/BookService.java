@@ -9,7 +9,9 @@ import com.libra_s.libraS.dtos.BookDto;
 import com.libra_s.libraS.dtos.BookFilterDto;
 import com.libra_s.libraS.dtos.DiscoverPageDto;
 import com.libra_s.libraS.dtos.TagDto;
+import com.libra_s.libraS.dtos.AdminBookDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
+import com.libra_s.libraS.dtos.mapper.AdminBookMapper;
 import com.libra_s.libraS.repository.BookRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,11 +30,13 @@ public class BookService {
     private final BookRepository bookRepository;
 
     private final BookMapper bookMapper;
+    private final AdminBookMapper adminBookMapper;
 
-    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, BookMapper bookMapper) {
+    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper) {
         this.userBookInfoService = userBookInfoService;
         this.bookRepository = bookRepository;
         this.bookMapper = bookMapper;
+        this.adminBookMapper = adminBookMapper;
     }
 
     public List<BookDto> getBooks() {
@@ -250,9 +254,9 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
-    public BookDto getBookById(Long id) {
+    public AdminBookDto getBookById(Long id) {
         Optional<Book> book = bookRepository.findById(id);
-        return book.map(bookMapper::toDto).orElse(null);
+        return book.map(adminBookMapper::toAdminDto).orElse(null);
     }
 
     public void setBaseBooksDescription() {

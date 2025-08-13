@@ -1,6 +1,7 @@
 package com.libra_s.libraS.rest;
 
 import com.libra_s.libraS.dtos.BookDto;
+import com.libra_s.libraS.dtos.AdminBookDto;
 import com.libra_s.libraS.dtos.BookFilterDto;
 import com.libra_s.libraS.service.BookService;
 import org.springframework.data.domain.Page;
@@ -81,7 +82,7 @@ public class AdminBookController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getBookById(@PathVariable Long id) {
         try {
-            BookDto book = bookService.getBookById(id);
+            AdminBookDto book = bookService.getBookById(id);
             if (book != null) {
                 return ResponseEntity.ok(book);
             } else {
