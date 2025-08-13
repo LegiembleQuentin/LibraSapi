@@ -28,6 +28,8 @@ public class AdminBookDto {
 
     private BigDecimal note;
 
+    private Integer nbVisit;
+
     private String imgUrl;
 
     private Set<TagDto> tags = new HashSet<>();
@@ -45,4 +47,12 @@ public class AdminBookDto {
     private Integer userCurrentVolume;
 
     private BigDecimal userMatch;
+
+    private Integer totalUsers;
+    private Double averageVolume;
+    private Integer usersInProgress;
+    private Integer usersCompleted;
+    private Integer usersNotStarted;
+    private Double averageProgress;
+    private Double completionRate;
 }

@@ -11,6 +11,7 @@ import java.util.List;
 public interface AdminBookMapper {
 
     @Mapping(target = "name", expression = "java(entity.getNames().get(0))")
+    @Mapping(target = "nbVisit", source = "nbVisit")
     AdminBookDto toAdminDto(Book entity);
 
     List<AdminBookDto> toAdminDtoList(List<Book> entityList);

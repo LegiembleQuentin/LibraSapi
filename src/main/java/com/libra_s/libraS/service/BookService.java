@@ -12,6 +12,8 @@ import com.libra_s.libraS.dtos.TagDto;
 import com.libra_s.libraS.dtos.AdminBookDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
 import com.libra_s.libraS.dtos.mapper.AdminBookMapper;
+import com.libra_s.libraS.service.BookStatisticsService;
+import com.libra_s.libraS.dtos.BookStatistics;
 import com.libra_s.libraS.repository.BookRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,12 +33,14 @@ public class BookService {
 
     private final BookMapper bookMapper;
     private final AdminBookMapper adminBookMapper;
+    private final BookStatisticsService bookStatisticsService;
 
-    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper) {
+    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService) {
         this.userBookInfoService = userBookInfoService;
         this.bookRepository = bookRepository;
         this.bookMapper = bookMapper;
         this.adminBookMapper = adminBookMapper;
+        this.bookStatisticsService = bookStatisticsService;
     }
 
     public List<BookDto> getBooks() {
@@ -256,7 +260,21 @@ public class BookService {
 
     public AdminBookDto getBookById(Long id) {
         Optional<Book> book = bookRepository.findById(id);
-        return book.map(adminBookMapper::toAdminDto).orElse(null);
+        if (book.isPresent()) {
+            AdminBookDto adminBookDto = adminBookMapper.toAdminDto(book.get());
+            BookStatistics stats = bookStatisticsService.calculateBookStatistics(id, book.get().getNbVolume());
+            
+            adminBookDto.setTotalUsers(stats.getTotalUsers());
+            adminBookDto.setAverageVolume(stats.getAverageVolume());
+            adminBookDto.setUsersInProgress(stats.getUsersInProgress());
+            adminBookDto.setUsersCompleted(stats.getUsersCompleted());
+            adminBookDto.setUsersNotStarted(stats.getUsersNotStarted());
+            adminBookDto.setAverageProgress(stats.getAverageProgress());
+            adminBookDto.setCompletionRate(stats.getCompletionRate());
+            
+            return adminBookDto;
+        }
+        return null;
     }
 
     public void setBaseBooksDescription() {

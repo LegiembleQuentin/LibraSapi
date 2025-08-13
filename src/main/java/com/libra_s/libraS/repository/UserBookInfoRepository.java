@@ -1,7 +1,10 @@
 package com.libra_s.libraS.repository;
 
 import com.libra_s.libraS.domain.UserBookInfo;
+import com.libra_s.libraS.domain.enums.UserBookStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,4 +16,13 @@ public interface UserBookInfoRepository extends JpaRepository<UserBookInfo, Long
     Optional<UserBookInfo> findByAppUserIdAndBookId(Long userId, Long bookId);
 
     List<UserBookInfo> findByAppUserId(Long userId);
+
+    @Query("SELECT COUNT(ubi) FROM UserBookInfo ubi WHERE ubi.book.id = :bookId")
+    Long countByBookId(@Param("bookId") Long bookId);
+
+    @Query("SELECT AVG(ubi.currentVolume) FROM UserBookInfo ubi WHERE ubi.book.id = :bookId")
+    Double getAverageCurrentVolumeByBookId(@Param("bookId") Long bookId);
+
+    @Query("SELECT COUNT(ubi) FROM UserBookInfo ubi WHERE ubi.book.id = :bookId AND ubi.status = :status")
+    Long countByBookIdAndStatus(@Param("bookId") Long bookId, @Param("status") UserBookStatus status);
 }
