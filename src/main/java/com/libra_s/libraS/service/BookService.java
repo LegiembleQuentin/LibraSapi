@@ -2,6 +2,8 @@ package com.libra_s.libraS.service;
 
 import com.libra_s.libraS.domain.AppUser;
 import com.libra_s.libraS.domain.Book;
+import com.libra_s.libraS.domain.Author;
+import com.libra_s.libraS.domain.Tag;
 import com.libra_s.libraS.domain.UserBookInfo;
 import com.libra_s.libraS.domain.enums.UserBookStatus;
 import com.libra_s.libraS.dtos.AuthorDto;
@@ -15,6 +17,8 @@ import com.libra_s.libraS.dtos.mapper.AdminBookMapper;
 import com.libra_s.libraS.service.BookStatisticsService;
 import com.libra_s.libraS.dtos.BookStatistics;
 import com.libra_s.libraS.repository.BookRepository;
+import com.libra_s.libraS.repository.AuthorRepository;
+import com.libra_s.libraS.repository.TagRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,8 @@ import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,14 +36,18 @@ public class BookService {
     private final UserBookInfoService userBookInfoService;
 
     private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
+    private final TagRepository tagRepository;
 
     private final BookMapper bookMapper;
     private final AdminBookMapper adminBookMapper;
     private final BookStatisticsService bookStatisticsService;
 
-    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService) {
+    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, AuthorRepository authorRepository, TagRepository tagRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService) {
         this.userBookInfoService = userBookInfoService;
         this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
+        this.tagRepository = tagRepository;
         this.bookMapper = bookMapper;
         this.adminBookMapper = adminBookMapper;
         this.bookStatisticsService = bookStatisticsService;
@@ -309,5 +319,20 @@ public class BookService {
         }
 
         bookRepository.saveAll(books);
+    }
+
+    public AdminBookDto updateBook(Long id, AdminBookDto adminBookDto) {
+        if (!bookRepository.existsById(id)) {
+            return null;
+        }
+        
+        adminBookDto.setId(id);
+        Book bookToUpdate = adminBookMapper.toEntity(adminBookDto);
+        
+        bookToUpdate.setModifiedAt(LocalDate.now());
+        
+        Book savedBook = bookRepository.save(bookToUpdate);
+        
+        return adminBookMapper.toAdminDto(savedBook);
     }
 }

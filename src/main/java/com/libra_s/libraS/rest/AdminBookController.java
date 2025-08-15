@@ -96,4 +96,23 @@ public class AdminBookController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateBook(@PathVariable Long id, @RequestBody AdminBookDto adminBookDto) {
+        try {
+            AdminBookDto updatedBook = bookService.updateBook(id, adminBookDto);
+            if (updatedBook != null) {
+                return ResponseEntity.ok(updatedBook);
+            } else {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Livre non trouvé");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur lors de la mise à jour du livre: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
 }
