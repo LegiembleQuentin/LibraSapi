@@ -1,6 +1,7 @@
 package com.libra_s.libraS.dtos;
 
 import com.libra_s.libraS.domain.enums.UserBookStatus;
+import lombok.Builder;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -10,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@Builder
 public class AdminBookDto {
     private Long id;
 
@@ -31,6 +33,8 @@ public class AdminBookDto {
     private Integer nbVisit;
 
     private String imgUrl;
+
+    private Boolean isCompleted;
 
     private Set<TagDto> tags = new HashSet<>();
 

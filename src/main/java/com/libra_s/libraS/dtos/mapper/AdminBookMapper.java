@@ -12,10 +12,12 @@ public interface AdminBookMapper {
 
     @Mapping(target = "name", expression = "java(entity.getNames().get(0))")
     @Mapping(target = "nbVisit", source = "nbVisit")
+    @Mapping(target = "isCompleted", expression = "java(entity.isCompleted())")
     AdminBookDto toAdminDto(Book entity);
 
     @Mapping(target = "names", expression = "java(java.util.Arrays.asList(dto.getName()))")
     @Mapping(target = "nbVisit", source = "nbVisit")
+    @Mapping(target = "isCompleted", expression = "java(dto.getIsCompleted())")
     Book toEntity(AdminBookDto dto);
 
     List<AdminBookDto> toAdminDtoList(List<Book> entityList);
