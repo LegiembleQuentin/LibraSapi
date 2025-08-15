@@ -134,4 +134,25 @@ public class AdminBookController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteBook(@PathVariable Long id) {
+        try {
+            boolean deleted = bookService.deleteBook(id);
+            if (deleted) {
+                Map<String, String> success = new HashMap<>();
+                success.put("message", "Livre supprimé avec succès");
+                return ResponseEntity.ok(success);
+            } else {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Livre non trouvé");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur lors de la suppression du livre: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
 }
