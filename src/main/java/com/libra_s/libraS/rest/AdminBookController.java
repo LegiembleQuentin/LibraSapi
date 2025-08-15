@@ -25,7 +25,7 @@ public class AdminBookController {
         this.bookService = bookService;
     }
 
-    @PostMapping
+    @PostMapping("/search")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getBooksWithFilters(
             @RequestBody(required = false) BookFilterDto filter,
@@ -93,6 +93,25 @@ public class AdminBookController {
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Erreur lors de la récupération du livre");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createBook(@RequestBody AdminBookDto adminBookDto) {
+        try {
+            AdminBookDto createdBook = bookService.createBook(adminBookDto);
+            if (createdBook != null) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
+            } else {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Erreur lors de la création du livre");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur lors de la création du livre: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }

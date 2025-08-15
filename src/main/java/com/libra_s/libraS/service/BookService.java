@@ -321,16 +321,30 @@ public class BookService {
         bookRepository.saveAll(books);
     }
 
+    public AdminBookDto createBook(AdminBookDto adminBookDto) {
+        adminBookDto.setId(null);
+        Book bookToCreate = adminBookMapper.toEntity(adminBookDto);
+        
+        bookToCreate.setCompleted(adminBookDto.getDateEnd() != null);
+        
+        LocalDate now = LocalDate.now();
+        bookToCreate.setCreatedAt(now);
+        bookToCreate.setModifiedAt(now);
+        
+        Book savedBook = bookRepository.save(bookToCreate);
+        
+        return adminBookMapper.toAdminDto(savedBook);
+    }
+
     public AdminBookDto updateBook(Long id, AdminBookDto adminBookDto) {
         if (!bookRepository.existsById(id)) {
             return null;
         }
-        
         adminBookDto.setId(id);
         Book bookToUpdate = adminBookMapper.toEntity(adminBookDto);
+        bookToUpdate.setCompleted(adminBookDto.getDateEnd() != null);
         
         bookToUpdate.setModifiedAt(LocalDate.now());
-        
         Book savedBook = bookRepository.save(bookToUpdate);
         
         return adminBookMapper.toAdminDto(savedBook);
