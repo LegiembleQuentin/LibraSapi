@@ -62,7 +62,7 @@ public class AdminUsersController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
-            Optional<AdminUserDto> userOpt = appUserService.getUserById(id);
+            Optional<AdminUserDto> userOpt = appUserService.getUserByIdForAdmin(id);
             if (userOpt.isPresent()) {
                 return ResponseEntity.ok(userOpt.get());
             } else {
