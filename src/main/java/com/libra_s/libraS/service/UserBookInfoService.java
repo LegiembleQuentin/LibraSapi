@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Service
 public class UserBookInfoService {
@@ -42,11 +43,13 @@ public class UserBookInfoService {
         userBookInfo.setBook(book);
         userBookInfo.setAppUser(user);
         userBookInfo.setStatus(UserBookStatus.TO_READ);
+        userBookInfo.setModifiedAt(LocalDateTime.now());
 
         userBookInfoRepository.save(userBookInfo);
     }
 
     public void save(UserBookInfo userBookInfo) {
+        userBookInfo.setModifiedAt(LocalDateTime.now());
         userBookInfoRepository.save(userBookInfo);
     }
 

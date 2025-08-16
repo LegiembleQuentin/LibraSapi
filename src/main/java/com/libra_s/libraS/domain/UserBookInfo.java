@@ -3,6 +3,7 @@ package com.libra_s.libraS.domain;
 import com.libra_s.libraS.domain.enums.UserBookStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Builder
 @NoArgsConstructor
@@ -30,4 +31,7 @@ public class UserBookInfo {
     private UserBookStatus status;
 
     private Integer currentVolume;
+
+    @Column(name = "modified_at")
+    private LocalDateTime modifiedAt;
 }

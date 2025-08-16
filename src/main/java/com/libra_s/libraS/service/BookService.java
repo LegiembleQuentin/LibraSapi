@@ -2,20 +2,32 @@ package com.libra_s.libraS.service;
 
 import com.libra_s.libraS.domain.AppUser;
 import com.libra_s.libraS.domain.Book;
+import com.libra_s.libraS.domain.Author;
+import com.libra_s.libraS.domain.Tag;
 import com.libra_s.libraS.domain.UserBookInfo;
 import com.libra_s.libraS.domain.enums.UserBookStatus;
 import com.libra_s.libraS.dtos.AuthorDto;
 import com.libra_s.libraS.dtos.BookDto;
+import com.libra_s.libraS.dtos.BookFilterDto;
 import com.libra_s.libraS.dtos.DiscoverPageDto;
 import com.libra_s.libraS.dtos.TagDto;
+import com.libra_s.libraS.dtos.AdminBookDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
+import com.libra_s.libraS.dtos.mapper.AdminBookMapper;
+import com.libra_s.libraS.service.BookStatisticsService;
+import com.libra_s.libraS.dtos.BookStatistics;
 import com.libra_s.libraS.repository.BookRepository;
+import com.libra_s.libraS.repository.AuthorRepository;
+import com.libra_s.libraS.repository.TagRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,18 +36,38 @@ public class BookService {
     private final UserBookInfoService userBookInfoService;
 
     private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
+    private final TagRepository tagRepository;
 
     private final BookMapper bookMapper;
+    private final AdminBookMapper adminBookMapper;
+    private final BookStatisticsService bookStatisticsService;
 
-    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, BookMapper bookMapper) {
+    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, AuthorRepository authorRepository, TagRepository tagRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService) {
         this.userBookInfoService = userBookInfoService;
         this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
+        this.tagRepository = tagRepository;
         this.bookMapper = bookMapper;
+        this.adminBookMapper = adminBookMapper;
+        this.bookStatisticsService = bookStatisticsService;
     }
 
     public List<BookDto> getBooks() {
         List<Book> books = bookRepository.findAll();
 
+        return books.stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public Page<BookDto> getBooksWithFilters(BookFilterDto filter, Pageable pageable) {
+        Page<Book> booksPage = bookRepository.findBooksWithFilters(filter, pageable);
+        return booksPage.map(bookMapper::toDto);
+    }
+
+    public List<BookDto> getBooksWithFilters(BookFilterDto filter) {
+        List<Book> books = bookRepository.findBooksWithFilters(filter);
         return books.stream()
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
@@ -236,6 +268,32 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
+    public AdminBookDto getBookById(Long id) {
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.isPresent()) {
+            AdminBookDto adminBookDto = adminBookMapper.toAdminDto(book.get());
+            BookStatistics stats = bookStatisticsService.calculateBookStatistics(id, book.get().getNbVolume());
+            
+            adminBookDto.setTotalUsers(stats.getTotalUsers());
+            adminBookDto.setAverageVolume(stats.getAverageVolume());
+            adminBookDto.setUsersInProgress(stats.getUsersInProgress());
+            adminBookDto.setUsersCompleted(stats.getUsersCompleted());
+            adminBookDto.setUsersNotStarted(stats.getUsersNotStarted());
+            adminBookDto.setAverageProgress(stats.getAverageProgress());
+            adminBookDto.setCompletionRate(stats.getCompletionRate());
+            
+            adminBookDto.setActiveUsersLast7Days(stats.getActiveUsersLast7Days());
+            adminBookDto.setActiveUsersLast30Days(stats.getActiveUsersLast30Days());
+            adminBookDto.setEngagementTrend(stats.getEngagementTrend());
+            adminBookDto.setActiveUsersThisMonth(stats.getActiveUsersThisMonth());
+            adminBookDto.setActiveUsersLastMonth(stats.getActiveUsersLastMonth());
+            adminBookDto.setNewReadersThisMonth(stats.getNewReadersThisMonth());
+            
+            return adminBookDto;
+        }
+        return null;
+    }
+
     public void setBaseBooksDescription() {
         // methode pour mettre à jour les données de base des livres présents de base lors de la mise en ligne car l'utf-8 n'est pas pris en compte lors de l'init sql
         List<Book> books = bookRepository.findAll();
@@ -261,5 +319,43 @@ public class BookService {
         }
 
         bookRepository.saveAll(books);
+    }
+
+    public AdminBookDto createBook(AdminBookDto adminBookDto) {
+        adminBookDto.setId(null);
+        Book bookToCreate = adminBookMapper.toEntity(adminBookDto);
+        
+        bookToCreate.setCompleted(adminBookDto.getDateEnd() != null);
+        
+        LocalDate now = LocalDate.now();
+        bookToCreate.setCreatedAt(now);
+        bookToCreate.setModifiedAt(now);
+        
+        Book savedBook = bookRepository.save(bookToCreate);
+        
+        return adminBookMapper.toAdminDto(savedBook);
+    }
+
+    public AdminBookDto updateBook(Long id, AdminBookDto adminBookDto) {
+        if (!bookRepository.existsById(id)) {
+            return null;
+        }
+        adminBookDto.setId(id);
+        Book bookToUpdate = adminBookMapper.toEntity(adminBookDto);
+        bookToUpdate.setCompleted(adminBookDto.getDateEnd() != null);
+        
+        bookToUpdate.setModifiedAt(LocalDate.now());
+        Book savedBook = bookRepository.save(bookToUpdate);
+        
+        return adminBookMapper.toAdminDto(savedBook);
+    }
+    
+    public boolean deleteBook(Long id) {
+        if (!bookRepository.existsById(id)) {
+            return false;
+        }
+        bookRepository.deleteById(id);
+        
+        return true;
     }
 }

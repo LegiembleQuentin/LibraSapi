@@ -8,9 +8,6 @@ import com.libra_s.libraS.service.AuthenticationService;
 import com.libra_s.libraS.service.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -53,6 +50,20 @@ public class AdminController {
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Identifiants invalides");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyAdmin() {
+        try {
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", true);
+            response.put("message", "Token admin valide");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Token invalide");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
     }
