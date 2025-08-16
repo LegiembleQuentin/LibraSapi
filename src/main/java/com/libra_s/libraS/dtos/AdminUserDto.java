@@ -23,4 +23,6 @@ public class AdminUserDto {
     private Long booksInProgress;
     private Long booksCompleted;
     private Double averageRating;
+    
+    private List<UserBookDto> books;
 }

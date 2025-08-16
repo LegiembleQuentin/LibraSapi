@@ -6,6 +6,7 @@ import com.libra_s.libraS.domain.enums.UserBookStatus;
 import com.libra_s.libraS.dtos.AdminUserDto;
 import com.libra_s.libraS.dtos.UserFilterDto;
 import com.libra_s.libraS.dtos.mapper.AdminUserMapper;
+import com.libra_s.libraS.dtos.mapper.UserBookMapper;
 import com.libra_s.libraS.repository.AppUserRepository;
 import com.libra_s.libraS.repository.UserBookInfoRepository;
 import org.springframework.data.domain.Page;
@@ -21,11 +22,13 @@ public class AppUserService {
     private final AppUserRepository appUserRepository;
     private final AdminUserMapper adminUserMapper;
     private final UserBookInfoRepository userBookInfoRepository;
+    private final UserBookMapper userBookMapper;
 
-    public AppUserService(AppUserRepository appUserRepository, AdminUserMapper adminUserMapper, UserBookInfoRepository userBookInfoRepository) {
+    public AppUserService(AppUserRepository appUserRepository, AdminUserMapper adminUserMapper, UserBookInfoRepository userBookInfoRepository, UserBookMapper userBookMapper) {
         this.appUserRepository = appUserRepository;
         this.adminUserMapper = adminUserMapper;
         this.userBookInfoRepository = userBookInfoRepository;
+        this.userBookMapper = userBookMapper;
     }
 
     public Optional<AppUser> getConnectedUser(UserDetails userDetails) {
@@ -64,6 +67,7 @@ public class AppUserService {
             adminUserDto.setBooksInProgress(booksInProgress);
             adminUserDto.setBooksCompleted(booksCompleted);
             adminUserDto.setAverageRating(averageRating);
+            adminUserDto.setBooks(userBookMapper.toUserBookDtoList(userBooks));
             
             return Optional.of(adminUserDto);
         }
