@@ -26,32 +26,7 @@ public class AdminUsersController {
         this.appUserService = appUserService;
     }
 
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "created_at"));
-            Page<AdminUserDto> usersPage = appUserService.getUsersWithFilters(new UserFilterDto(), pageable);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("content", usersPage.getContent());
-            response.put("totalElements", usersPage.getTotalElements());
-            response.put("totalPages", usersPage.getTotalPages());
-            response.put("number", usersPage.getNumber());
-            response.put("size", usersPage.getSize());
-            response.put("first", usersPage.isFirst());
-            response.put("last", usersPage.isLast());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Erreur lors de la récupération des utilisateurs");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
-    }
+
 
     @PostMapping("/search")
     @PreAuthorize("hasRole('ADMIN')")
