@@ -96,3 +96,21 @@ La base de données PostgreSQL est configurée pour être initialisée avec un f
 #### Tags
 
 - **GET /api/tags** : Récupère tous les tags disponibles
+
+#### Administration
+
+##### Authentification Admin
+- **POST /api/admin/login** : Authentification d'un administrateur
+- **GET /api/admin/verify** : Vérification de la validité du token administrateur
+
+##### Gestion des Livres (Admin)
+- **GET /api/admin/books** : Récupère tous les livres avec pagination (page, size)
+- **GET /api/admin/books/{id}** : Récupère un livre spécifique par son ID
+- **POST /api/admin/books** : Crée un nouveau livre
+- **PUT /api/admin/books/{id}** : Met à jour un livre existant
+- **DELETE /api/admin/books/{id}** : Supprime un livre
+- **POST /api/admin/books/search** : Recherche de livres avec filtres et pagination
+
+##### Gestion des Utilisateurs (Admin)
+- **GET /api/admin/users/{id}** : Récupère un utilisateur spécifique par son ID
+- **POST /api/admin/users/search** : Recherche d'utilisateurs avec filtres et pagination
