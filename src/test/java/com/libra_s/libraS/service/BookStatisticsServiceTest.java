@@ -239,4 +239,99 @@ class BookStatisticsServiceTest {
 
         assertEquals(-100.0, stats.getEngagementTrend());
     }
+
+    // Test d'arrondis précis : vérifie l'arrondi à 2 décimales pour averageProgress
+    @Test
+    void calculateAverageProgress_withPreciseRounding_roundsCorrectly() {
+        Long bookId = 11L;
+        int totalVolumes = 3;
+
+        // 1.666... / 3 = 0.555... -> arrondi à 0.56
+        when(userBookInfoRepository.getAverageCurrentVolumeByBookId(bookId)).thenReturn(1.6666666);
+        when(userBookInfoRepository.countByBookId(bookId)).thenReturn(100L);
+        when(userBookInfoRepository.countByBookIdAndStatus(eq(bookId), any())).thenReturn(0L);
+        when(userBookInfoRepository.countByBookIdAndModifiedAfter(eq(bookId), any())).thenReturn(0L);
+        when(userBookInfoRepository.countByBookIdAndModifiedBetween(eq(bookId), any(), any())).thenReturn(0L);
+
+        BookStatistics stats = bookStatisticsService.calculateBookStatistics(bookId, totalVolumes);
+
+        assertEquals(0.56, stats.getAverageProgress());
+    }
+
+    // Test d'arrondis précis : vérifie l'arrondi à 2 décimales pour completionRate
+    @Test
+    void calculateCompletionRate_withPreciseRounding_roundsCorrectly() {
+        Long bookId = 12L;
+        Long totalUsers = 7L;
+        Long completedUsers = 1L; // 1/7 = 0.142857... -> arrondi à 0.14
+
+        when(userBookInfoRepository.countByBookId(bookId)).thenReturn(totalUsers);
+        when(userBookInfoRepository.getAverageCurrentVolumeByBookId(bookId)).thenReturn(3.0);
+        when(userBookInfoRepository.countByBookIdAndStatus(bookId, UserBookStatus.COMPLETED)).thenReturn(completedUsers);
+        when(userBookInfoRepository.countByBookIdAndStatus(bookId, UserBookStatus.READING)).thenReturn(3L);
+        when(userBookInfoRepository.countByBookIdAndStatus(bookId, UserBookStatus.TO_READ)).thenReturn(3L);
+        when(userBookInfoRepository.countByBookIdAndModifiedAfter(eq(bookId), any())).thenReturn(0L);
+        when(userBookInfoRepository.countByBookIdAndModifiedBetween(eq(bookId), any(), any())).thenReturn(0L);
+
+        BookStatistics stats = bookStatisticsService.calculateBookStatistics(bookId, 10);
+
+        assertEquals(0.14, stats.getCompletionRate());
+    }
+
+    // Test d'arrondis précis : vérifie l'arrondi à 2 décimales pour engagementTrend
+    @Test
+    void calculateEngagementTrend_withPreciseRounding_roundsCorrectly() {
+        Long bookId = 13L;
+        Long thisMonth = 17L;
+        Long lastMonth = 6L; // (17-6)/6 = 11/6 = 1.833... * 100 = 183.333... -> arrondi à 183.33
+
+        when(userBookInfoRepository.countByBookId(bookId)).thenReturn(100L);
+        when(userBookInfoRepository.getAverageCurrentVolumeByBookId(bookId)).thenReturn(5.0);
+        when(userBookInfoRepository.countByBookIdAndStatus(eq(bookId), any())).thenReturn(30L);
+        when(userBookInfoRepository.countByBookIdAndModifiedAfter(eq(bookId), any())).thenReturn(10L);
+        when(userBookInfoRepository.countByBookIdAndModifiedBetween(eq(bookId), any(), any()))
+                .thenReturn(thisMonth, lastMonth);
+
+        BookStatistics stats = bookStatisticsService.calculateBookStatistics(bookId, 10);
+
+        assertEquals(183.33, stats.getEngagementTrend());
+    }
+
+    // Test d'arrondis limites : vérifie l'arrondi de valeurs très petites
+    @Test
+    void calculateAverageProgress_withVerySmallValues_roundsCorrectly() {
+        Long bookId = 14L;
+        int totalVolumes = 1000;
+
+        // 0.001 / 1000 = 0.000001 -> arrondi à 0.0
+        when(userBookInfoRepository.getAverageCurrentVolumeByBookId(bookId)).thenReturn(0.001);
+        when(userBookInfoRepository.countByBookId(bookId)).thenReturn(100L);
+        when(userBookInfoRepository.countByBookIdAndStatus(eq(bookId), any())).thenReturn(0L);
+        when(userBookInfoRepository.countByBookIdAndModifiedAfter(eq(bookId), any())).thenReturn(0L);
+        when(userBookInfoRepository.countByBookIdAndModifiedBetween(eq(bookId), any(), any())).thenReturn(0L);
+
+        BookStatistics stats = bookStatisticsService.calculateBookStatistics(bookId, totalVolumes);
+
+        assertEquals(0.0, stats.getAverageProgress());
+    }
+
+    // Test d'arrondis limites : vérifie l'arrondi de pourcentages très proches de 1
+    @Test
+    void calculateCompletionRate_withAlmostCompleteRate_roundsCorrectly() {
+        Long bookId = 15L;
+        Long totalUsers = 1000L;
+        Long completedUsers = 999L; // 999/1000 = 0.999 -> arrondi à 1.0
+
+        when(userBookInfoRepository.countByBookId(bookId)).thenReturn(totalUsers);
+        when(userBookInfoRepository.getAverageCurrentVolumeByBookId(bookId)).thenReturn(3.0);
+        when(userBookInfoRepository.countByBookIdAndStatus(bookId, UserBookStatus.COMPLETED)).thenReturn(completedUsers);
+        when(userBookInfoRepository.countByBookIdAndStatus(bookId, UserBookStatus.READING)).thenReturn(1L);
+        when(userBookInfoRepository.countByBookIdAndStatus(bookId, UserBookStatus.TO_READ)).thenReturn(0L);
+        when(userBookInfoRepository.countByBookIdAndModifiedAfter(eq(bookId), any())).thenReturn(0L);
+        when(userBookInfoRepository.countByBookIdAndModifiedBetween(eq(bookId), any(), any())).thenReturn(0L);
+
+        BookStatistics stats = bookStatisticsService.calculateBookStatistics(bookId, 10);
+
+        assertEquals(1.0, stats.getCompletionRate());
+    }
 }
