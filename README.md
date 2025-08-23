@@ -97,6 +97,42 @@ La base de données PostgreSQL est configurée pour être initialisée avec un f
 
 - **GET /api/tags** : Récupère tous les tags disponibles
 
+## Tests Unitaires
+
+Le projet inclut une suite complète de tests unitaires pour les services critiques :
+
+### Services Testés
+- **BookStatisticsService** (18 tests) : Calculs de statistiques, arrondis, métriques dérivées
+- **JwtService** (18 tests) : Génération/validation tokens, extraction claims, gestion expiration
+- **AuthenticationService** (10 tests) : Inscription utilisateurs, authentification, validation API key
+- **ScanService** (16 tests) : Upload images, validation formats, parsing JSON, gestion erreurs
+
+### Couverture de Tests
+- ✅ **Calculs métier** : Statistiques, pourcentages, arrondis précis
+- ✅ **Sécurité JWT** : Tokens, claims, expiration, validation
+- ✅ **Authentification** : Login, signup, API keys, gestion erreurs
+- ✅ **Upload fichiers** : Formats images, données corrompues, robustesse
+- ✅ **Gestion d'erreurs** : Cas limites, exceptions, valeurs nulles
+- ✅ **Performance** : Tests de charge, timeouts
+
+### Exécution des Tests
+```bash
+# Tous les tests
+mvn test
+
+# Tests spécifiques par service
+mvn test -Dtest=BookStatisticsServiceTest
+mvn test -Dtest=JwtServiceTest
+mvn test -Dtest=AuthenticationServiceTest
+mvn test -Dtest=ScanServiceTest
+```
+
+### Configuration JVM
+Les tests incluent une configuration JVM optimisée pour supprimer les warnings :
+- `-XX:+EnableDynamicAgentLoading` : Support agents dynamiques (Mockito)
+- `-Xshare:off` : Désactive Class Data Sharing pour éviter les conflits
+- `-Djdk.instrument.traceUsage=false` : Supprime les traces d'instrumentation
+
 #### Administration
 
 ##### Authentification Admin

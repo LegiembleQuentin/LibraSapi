@@ -87,8 +87,23 @@ public class ScanService {
     public String upload(MultipartFile multipartFile) {
         Path tempDir = null;
         try {
+            // Validation du fichier
+            if (multipartFile == null) {
+                return "Image couldn't upload, Something went wrong";
+            }
+            
             String fileName = multipartFile.getOriginalFilename();
-            fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
+            if (fileName == null || fileName.trim().isEmpty()) {
+                return "Image couldn't upload, Something went wrong";
+            }
+            
+            // Validation de l'extension
+            String extension = this.getExtension(fileName);
+            if (extension == null || extension.trim().isEmpty()) {
+                return "Image couldn't upload, Something went wrong";
+            }
+            
+            fileName = UUID.randomUUID().toString().concat(extension);
 
             File file = this.convertToFile(multipartFile, fileName);
             String URL = this.uploadFile(file, fileName);
@@ -144,7 +159,16 @@ public class ScanService {
     }
 
     private String getExtension(String fileName) {
-        return fileName.substring(fileName.lastIndexOf("."));
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return "";
+        }
+        
+        int lastDotIndex = fileName.lastIndexOf(".");
+        if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
+            return ""; // Pas d'extension ou point à la fin
+        }
+        
+        return fileName.substring(lastDotIndex);
     }
 
     public InputStream getJsonFileInputStream() throws IOException {
