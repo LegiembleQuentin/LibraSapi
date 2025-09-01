@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.time.LocalDateTime;
 
 @Repository
@@ -32,4 +34,9 @@ public interface UserBookInfoRepository extends JpaRepository<UserBookInfo, Long
     
     @Query("SELECT COUNT(ubi) FROM UserBookInfo ubi WHERE ubi.book.id = :bookId AND ubi.modifiedAt >= :startDate AND ubi.modifiedAt < :endDate")
     Long countByBookIdAndModifiedBetween(@Param("bookId") Long bookId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    
+    @Query("SELECT ubi.book.id FROM UserBookInfo ubi WHERE ubi.appUser.id = :userId AND ubi.book.id IN :bookIds")
+    Set<Long> findBookIdsInUserLibrary(@Param("userId") Long userId, @Param("bookIds") Collection<Long> bookIds);
+    
+    boolean existsByAppUserIdAndBookId(Long appUserId, Long bookId);
 }

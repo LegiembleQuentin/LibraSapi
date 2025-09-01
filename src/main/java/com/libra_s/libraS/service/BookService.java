@@ -14,6 +14,7 @@ import com.libra_s.libraS.dtos.TagDto;
 import com.libra_s.libraS.dtos.AdminBookDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
 import com.libra_s.libraS.dtos.mapper.AdminBookMapper;
+import com.libra_s.libraS.repository.UserBookInfoRepository;
 import com.libra_s.libraS.service.BookStatisticsService;
 import com.libra_s.libraS.dtos.BookStatistics;
 import com.libra_s.libraS.repository.BookRepository;
@@ -38,13 +39,16 @@ public class BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final TagRepository tagRepository;
+    
+    private final UserBookInfoRepository userBookInfoRepository;
 
     private final BookMapper bookMapper;
     private final AdminBookMapper adminBookMapper;
     private final BookStatisticsService bookStatisticsService;
 
-    public BookService(UserBookInfoService userBookInfoService, BookRepository bookRepository, AuthorRepository authorRepository, TagRepository tagRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService) {
+    public BookService(UserBookInfoService userBookInfoService, UserBookInfoRepository userBookInfoRepository, BookRepository bookRepository, AuthorRepository authorRepository, TagRepository tagRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService) {
         this.userBookInfoService = userBookInfoService;
+        this.userBookInfoRepository = userBookInfoRepository;
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.tagRepository = tagRepository;
@@ -80,7 +84,7 @@ public class BookService {
         discoverPageDto.setBestRated(get8BestRatedBooks());
         discoverPageDto.setNewBooks(get8LastModifiedBooks());
         discoverPageDto.setCompleted(get8BestRatedCompletedBooks());
-        discoverPageDto.setUserInProgress(get8InProgressBookByUser(userId));
+        discoverPageDto.setInProgress(get8BestRatedInProgressBooks());
 
 
         discoverPageDto.setRecommended(new ArrayList<>());
@@ -107,7 +111,7 @@ public class BookService {
 
     public List<BookDto> get8LastModifiedBooks() {
         List<Book> books = bookRepository.findTop8ByOrderByDateStartDesc();
-
+        
         return books.stream()
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
@@ -115,7 +119,7 @@ public class BookService {
 
     public List<BookDto> get8BestRatedCompletedBooks() {
         List<Book> books = bookRepository.findTop8ByIsCompletedTrueOrderByNoteDescNbVisitDesc();
-
+        
         return books.stream()
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
@@ -123,7 +127,7 @@ public class BookService {
 
     public List<BookDto> get8BestRatedInProgressBooks() {
         List<Book> books = bookRepository.findTop8ByIsCompletedFalseOrderByNoteDescNbVisitDesc();
-
+        
         return books.stream()
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
@@ -132,7 +136,7 @@ public class BookService {
     private List<BookDto> get8InProgressBookByUser(Long userId) {
         Pageable pageable = PageRequest.of(0, 8, JpaSort.unsafe("random()"));;
         List<Book> books = bookRepository.findUserBookInProgress(userId, UserBookStatus.READING, pageable);
-
+        
         return books.stream()
                 .map(bookMapper::toDto)
                 .collect(Collectors.toList());
@@ -141,6 +145,9 @@ public class BookService {
     public BookDto getBookDetailsForUser(Long bookId, Long userId) {
         Book book = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book not found"));
         BookDto bookDto = bookMapper.toDto(book);
+
+        boolean isInLibrary = userBookInfoRepository.existsByAppUserIdAndBookId(userId, bookId);
+        bookDto.setIsInUserLibrary(isInLibrary);
 
         Set<AuthorDto> authors = bookDto.getAuthors();
         List<Long> authorIds = authors.stream().map(AuthorDto::getId).collect(Collectors.toList());
@@ -175,27 +182,54 @@ public class BookService {
         return bookDto;
     }
 
-    public List<BookDto> getBooksByTags(List<TagDto> tags) {
+    public List<BookDto> getBooksByTags(List<TagDto> tags, AppUser user) {
+        List<Book> books;
+        
         if(tags.isEmpty()) {
-            return bookRepository.findTop20ByOrderByNbVisitDesc().stream()
-                    .map(bookMapper::toDto)
-                    .collect(Collectors.toList());
+            books = bookRepository.findTop20ByOrderByNbVisitDesc();
+        } else {
+            List<String> tagIds = tags.stream().map(TagDto::getName).collect(Collectors.toList());
+            books = bookRepository.findByTags(tagIds, (long) tagIds.size());
         }
 
-        List<String> tagIds = tags.stream().map(TagDto::getName).collect(Collectors.toList());
+        if (books.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        List<Book> books = bookRepository.findByTags(tagIds, (long) tagIds.size());
+        List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
+        
+        Set<Long> inLibraryIds = user != null 
+            ? userBookInfoRepository.findBookIdsInUserLibrary(user.getId(), bookIds)
+            : Collections.emptySet();
 
         return books.stream()
-                .map(bookMapper::toDto)
+                .map(book -> {
+                    BookDto dto = bookMapper.toDto(book);
+                    dto.setIsInUserLibrary(inLibraryIds.contains(book.getId()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
-    public List<BookDto> getRecentBooks() {
+    public List<BookDto> getRecentBooks(AppUser user) {
         List<Book> books = bookRepository.findTop20ByOrderByDateStartDesc();
 
+        if (books.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
+        
+        Set<Long> inLibraryIds = user != null 
+            ? userBookInfoRepository.findBookIdsInUserLibrary(user.getId(), bookIds)
+            : Collections.emptySet();
+
         return books.stream()
-                .map(bookMapper::toDto)
+                .map(book -> {
+                    BookDto dto = bookMapper.toDto(book);
+                    dto.setIsInUserLibrary(inLibraryIds.contains(book.getId()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -254,17 +288,32 @@ public class BookService {
                 bookDto.setUserStatus(userBookInfo.getStatus());
                 bookDto.setUserRating(userBookInfo.getNote());
                 bookDto.setUserCurrentVolume(userBookInfo.getCurrentVolume());
+                bookDto.setIsInUserLibrary(true);
             }
         }
 
         return bookDtos;
     }
 
-    public List<BookDto> search(String search) {
+    public List<BookDto> search(String search, AppUser user) {
         List<Book> books = bookRepository.search(search);
+        
+        if (books.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
+        
+        Set<Long> inLibraryIds = user != null 
+            ? userBookInfoRepository.findBookIdsInUserLibrary(user.getId(), bookIds)
+            : Collections.emptySet();
 
         return books.stream()
-                .map(bookMapper::toDto)
+                .map(book -> {
+                    BookDto dto = bookMapper.toDto(book);
+                    dto.setIsInUserLibrary(inLibraryIds.contains(book.getId()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
