@@ -1,5 +1,6 @@
 package com.libra_s.libraS.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.libra_s.libraS.domain.enums.UserBookStatus;
 import lombok.Data;
 
@@ -31,6 +32,8 @@ public class BookDto {
     private BigDecimal note;
 
     private String imgUrl;
+    
+    private boolean isCompleted;
 
     private Set<TagDto> tags = new HashSet<>();
 
@@ -43,6 +46,9 @@ public class BookDto {
     private LocalDate createdAt;
 
     private LocalDate modifiedAt;
+    
+    
+    private Boolean isInUserLibrary;
 
     private UserBookStatus userStatus;
 

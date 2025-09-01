@@ -77,17 +77,39 @@ public class BookController {
     }
 
     @PostMapping("/books/by-tags")
-    public ResponseEntity<List<BookDto>> getBooksByTags(
+    public ResponseEntity<?> getBooksByTags(
             @RequestBody(required = true) List<TagDto> tagDtos
     ) {
-        List<BookDto> result = bookService.getBooksByTags(tagDtos);
-        return ResponseEntity.ok(result);
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AppUser currentUser = (AppUser) authentication.getPrincipal();
+
+            if (currentUser != null) {
+                List<BookDto> result = bookService.getBooksByTags(tagDtos, currentUser);
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+        }
     }
 
     @GetMapping("/books/recent")
-    public ResponseEntity<List<BookDto>> getRecentBooks() {
-        List<BookDto> result = bookService.getRecentBooks();
-        return ResponseEntity.ok(result);
+    public ResponseEntity<?> getRecentBooks() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            AppUser currentUser = (AppUser) authentication.getPrincipal();
+
+            if (currentUser != null) {
+                List<BookDto> result = bookService.getRecentBooks(currentUser);
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
+        }
     }
 
     @PostMapping("/book/{bookId}/switch-in-user-library")
@@ -152,7 +174,7 @@ public class BookController {
             AppUser currentUser = (AppUser) authentication.getPrincipal();
 
             if (currentUser != null) {
-                List<BookDto> result = bookService.search(search);
+                List<BookDto> result = bookService.search(search, currentUser);
                 return ResponseEntity.ok(result);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in");
