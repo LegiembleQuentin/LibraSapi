@@ -1,9 +1,13 @@
 package com.libra_s.libraS.service;
 
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.libra_s.libraS.domain.AppUser;
 import com.libra_s.libraS.domain.Book;
-import com.libra_s.libraS.domain.Author;
-import com.libra_s.libraS.domain.Tag;
 import com.libra_s.libraS.domain.UserBookInfo;
 import com.libra_s.libraS.domain.enums.UserBookStatus;
 import com.libra_s.libraS.dtos.AuthorDto;
@@ -15,20 +19,26 @@ import com.libra_s.libraS.dtos.AdminBookDto;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
 import com.libra_s.libraS.dtos.mapper.AdminBookMapper;
 import com.libra_s.libraS.repository.UserBookInfoRepository;
-import com.libra_s.libraS.service.BookStatisticsService;
 import com.libra_s.libraS.dtos.BookStatistics;
 import com.libra_s.libraS.repository.BookRepository;
 import com.libra_s.libraS.repository.AuthorRepository;
 import com.libra_s.libraS.repository.TagRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,8 +55,17 @@ public class BookService {
     private final BookMapper bookMapper;
     private final AdminBookMapper adminBookMapper;
     private final BookStatisticsService bookStatisticsService;
+    
+    @Value("${firebase.service-account.path}")
+    private String firebaseCredentialsPath;
+    
+    private String bucketName = "libras-ab46c.appspot.com";
+    
+    private String coversFolder = "covers";
+    
+    private final ResourceLoader resourceLoader;
 
-    public BookService(UserBookInfoService userBookInfoService, UserBookInfoRepository userBookInfoRepository, BookRepository bookRepository, AuthorRepository authorRepository, TagRepository tagRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService) {
+    public BookService(UserBookInfoService userBookInfoService, UserBookInfoRepository userBookInfoRepository, BookRepository bookRepository, AuthorRepository authorRepository, TagRepository tagRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService, ResourceLoader resourceLoader) {
         this.userBookInfoService = userBookInfoService;
         this.userBookInfoRepository = userBookInfoRepository;
         this.bookRepository = bookRepository;
@@ -55,6 +74,7 @@ public class BookService {
         this.bookMapper = bookMapper;
         this.adminBookMapper = adminBookMapper;
         this.bookStatisticsService = bookStatisticsService;
+        this.resourceLoader = resourceLoader;
     }
 
     public List<BookDto> getBooks() {
@@ -372,9 +392,8 @@ public class BookService {
 
     public AdminBookDto createBook(AdminBookDto adminBookDto) {
         adminBookDto.setId(null);
+        adminBookDto.setIsCompleted(adminBookDto.getDateEnd() != null);
         Book bookToCreate = adminBookMapper.toEntity(adminBookDto);
-        
-        bookToCreate.setCompleted(adminBookDto.getDateEnd() != null);
         
         LocalDate now = LocalDate.now();
         bookToCreate.setCreatedAt(now);
@@ -407,4 +426,117 @@ public class BookService {
         
         return true;
     }
+    
+    @Transactional
+    public BookDto replaceBookImage(Long bookId, MultipartFile newImage) {
+        if (newImage == null || newImage.isEmpty()) {
+            throw new IllegalArgumentException("Aucun fichier image fourni.");
+        }
+        
+        String contentType = Optional.ofNullable(newImage.getContentType()).orElse("");
+        Set<String> allowed = Set.of("image/jpeg", "image/png", "image/webp");
+        if (!allowed.contains(contentType)) {
+            throw new IllegalArgumentException("Type de fichier non supporté. Autorisés: JPEG, PNG, WEBP.");
+        }
+        
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Livre introuvable"));
+        
+        String oldUrl = book.getImgUrl();
+        
+        try {
+            // Client Storage (avec credentials Firebase)
+            Storage storage = buildStorage();
+            
+            // Nom/chemin + métadonnées
+            String ext = guessExtension(contentType, newImage.getOriginalFilename());
+            String token = UUID.randomUUID().toString();
+            String objectPath = coversFolder + "/book-" + bookId + "-" + UUID.randomUUID() + ext;
+            
+            BlobId blobId = BlobId.of(bucketName, objectPath);
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                    .setContentType(contentType)
+                    .setMetadata(Map.of("firebaseStorageDownloadTokens", token))
+                    .build();
+            
+            // Upload
+            storage.create(blobInfo, newImage.getBytes());
+            
+            // Construire l’URL de téléchargement (avec token)
+            String downloadUrl = buildFirebaseDownloadUrl(bucketName, objectPath, token);
+            
+            // Mettre à jour le livre
+            book.setImgUrl(downloadUrl);
+            book.setModifiedAt(LocalDate.now());
+            Book saved = bookRepository.save(book);
+            
+            // Supprimer l’ancienne image
+            deleteOldFirebaseObjectIfSameBucket(storage, oldUrl);
+            
+            return bookMapper.toDto(saved);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Échec du remplacement d'image: " + e.getMessage(), e);
+        }
+    }
+    
+    private Storage buildStorage() throws Exception {
+        try (InputStream is = resourceLoader.getResource(firebaseCredentialsPath).getInputStream()) {
+            Credentials creds = GoogleCredentials.fromStream(is);
+            return StorageOptions.newBuilder().setCredentials(creds).build().getService();
+        }
+    }
+    
+    private String guessExtension(String contentType, String originalName) {
+        return switch (contentType) {
+            case "image/jpeg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/webp" -> ".webp";
+            default -> {
+                if (originalName != null && originalName.contains(".")) {
+                    String ext = originalName.substring(originalName.lastIndexOf(".")).toLowerCase();
+                    if (Set.of(".jpg", ".jpeg", ".png", ".webp").contains(ext))
+                        yield ext.equals(".jpeg") ? ".jpg" : ext;
+                }
+                yield ".jpg";
+            }
+        };
+    }
+    
+    private String buildFirebaseDownloadUrl(String bucket, String objectPath, String token) {
+        String encoded = URLEncoder.encode(objectPath, StandardCharsets.UTF_8);
+        return "https://firebasestorage.googleapis.com/v0/b/" + bucket + "/o/" + encoded + "?alt=media&token=" + token;
+    }
+    
+    private void deleteOldFirebaseObjectIfSameBucket(Storage storage, String oldUrl) {
+        if (oldUrl == null || oldUrl.isBlank()) return;
+        try {
+            // Format attendu: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{pathEnc}?alt=media&token=...
+            String marker = "/v0/b/";
+            int i = oldUrl.indexOf(marker);
+            if (i < 0) return;
+            
+            int bStart = i + marker.length();
+            int bEnd = oldUrl.indexOf("/", bStart);
+            if (bEnd < 0) return;
+            
+            String urlBucket = oldUrl.substring(bStart, bEnd);
+            if (!bucketName.equals(urlBucket)) return; // autre bucket => on ne touche pas
+            
+            int oIdx = oldUrl.indexOf("/o/", bEnd);
+            if (oIdx < 0) return;
+            
+            int pStart = oIdx + 3; // après "/o/"
+            int qIdx = oldUrl.indexOf("?", pStart);
+            if (qIdx < 0) qIdx = oldUrl.length();
+            
+            String encodedPath = oldUrl.substring(pStart, qIdx);
+            String objectPath = URLDecoder.decode(encodedPath, StandardCharsets.UTF_8);
+            
+            storage.delete(BlobId.of(bucketName, objectPath));
+        } catch (Exception ignore) {
+        }
+    }
+    
+    
 }

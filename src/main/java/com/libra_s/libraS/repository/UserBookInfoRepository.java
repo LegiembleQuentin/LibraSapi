@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,4 +40,19 @@ public interface UserBookInfoRepository extends JpaRepository<UserBookInfo, Long
     Set<Long> findBookIdsInUserLibrary(@Param("userId") Long userId, @Param("bookIds") Collection<Long> bookIds);
     
     boolean existsByAppUserIdAndBookId(Long appUserId, Long bookId);
+
+    @Query("SELECT COUNT(DISTINCT ubi.appUser.id) FROM UserBookInfo ubi WHERE ubi.modifiedAt >= :since")
+    long countDistinctActiveUsersSince(@Param("since") LocalDateTime since);
+
+    @Query("SELECT b.id, "+
+           "COUNT(DISTINCT CASE WHEN ubi.modifiedAt >= :thisMonthStart AND ubi.modifiedAt < :now THEN ubi.appUser.id END), "+
+           "COUNT(DISTINCT CASE WHEN ubi.modifiedAt >= :lastMonthStart AND ubi.modifiedAt < :thisMonthStart THEN ubi.appUser.id END) " +
+           "FROM UserBookInfo ubi JOIN ubi.book b " +
+           "GROUP BY b.id")
+    List<Object[]> aggregateDistinctActiveUsersForTrend(@Param("thisMonthStart") LocalDateTime thisMonthStart,
+                                                        @Param("lastMonthStart") LocalDateTime lastMonthStart,
+                                                        @Param("now") LocalDateTime now);
+
+    @Query("SELECT b, COUNT(DISTINCT ubi.appUser.id) as readers FROM UserBookInfo ubi JOIN ubi.book b GROUP BY b ORDER BY readers DESC")
+    List<Object[]> findTopBooksByReaders(Pageable pageable);
 }
