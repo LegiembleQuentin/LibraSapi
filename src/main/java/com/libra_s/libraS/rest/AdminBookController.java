@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -152,6 +153,22 @@ public class AdminBookController {
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Erreur lors de la suppression du livre: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+    
+    @PutMapping("/img/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> changeBookImg(
+            @PathVariable Long id,
+            @RequestParam("image") MultipartFile file
+    ) {
+        try {
+            BookDto book = bookService.replaceBookImage(id, file);
+            return ResponseEntity.ok(book);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur lors du changement d'image: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }

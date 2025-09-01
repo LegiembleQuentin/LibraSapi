@@ -33,6 +33,8 @@ public class BookDto {
 
     private String imgUrl;
     
+    private int nbVisit;
+    
     private boolean isCompleted;
 
     private Set<TagDto> tags = new HashSet<>();

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long>, BookRepositoryCustom {
@@ -47,4 +48,11 @@ public interface BookRepository extends JpaRepository<Book, Long>, BookRepositor
             "a.name LIKE %:search% OR " +
             "b.synopsis LIKE %:search%")
     List<Book> search(@Param("search") String search);
+
+    @Query("SELECT COUNT(b) FROM Book b WHERE b.createdAt >= :since")
+    long countBooksCreatedSince(@Param("since") LocalDate since);
+
+    List<Book> findAllByOrderByNoteDesc(Pageable pageable);
+
+    List<Book> findAllByNoteNotNullOrderByNoteDesc(Pageable pageable);
 }
