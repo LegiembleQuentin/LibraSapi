@@ -16,6 +16,7 @@ import com.libra_s.libraS.dtos.BookFilterDto;
 import com.libra_s.libraS.dtos.DiscoverPageDto;
 import com.libra_s.libraS.dtos.TagDto;
 import com.libra_s.libraS.dtos.AdminBookDto;
+import com.libra_s.libraS.dtos.mapper.AuthorMapper;
 import com.libra_s.libraS.dtos.mapper.BookMapper;
 import com.libra_s.libraS.dtos.mapper.AdminBookMapper;
 import com.libra_s.libraS.repository.UserBookInfoRepository;
@@ -53,6 +54,7 @@ public class BookService {
     private final UserBookInfoRepository userBookInfoRepository;
 
     private final BookMapper bookMapper;
+    private final AuthorMapper authorMapper;
     private final AdminBookMapper adminBookMapper;
     private final BookStatisticsService bookStatisticsService;
     
@@ -65,13 +67,14 @@ public class BookService {
     
     private final ResourceLoader resourceLoader;
 
-    public BookService(UserBookInfoService userBookInfoService, UserBookInfoRepository userBookInfoRepository, BookRepository bookRepository, AuthorRepository authorRepository, TagRepository tagRepository, BookMapper bookMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService, ResourceLoader resourceLoader) {
+    public BookService(UserBookInfoService userBookInfoService, UserBookInfoRepository userBookInfoRepository, BookRepository bookRepository, AuthorRepository authorRepository, TagRepository tagRepository, BookMapper bookMapper, AuthorMapper authorMapper, AdminBookMapper adminBookMapper, BookStatisticsService bookStatisticsService, ResourceLoader resourceLoader) {
         this.userBookInfoService = userBookInfoService;
         this.userBookInfoRepository = userBookInfoRepository;
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.tagRepository = tagRepository;
         this.bookMapper = bookMapper;
+        this.authorMapper = authorMapper;
         this.adminBookMapper = adminBookMapper;
         this.bookStatisticsService = bookStatisticsService;
         this.resourceLoader = resourceLoader;
@@ -536,6 +539,10 @@ public class BookService {
             storage.delete(BlobId.of(bucketName, objectPath));
         } catch (Exception ignore) {
         }
+    }
+    
+    public List<AuthorDto> getAllAuthors() {
+        return authorMapper.toDto(authorRepository.findAll());
     }
     
     
