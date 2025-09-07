@@ -1,5 +1,6 @@
 package com.libra_s.libraS.rest;
 
+import com.libra_s.libraS.dtos.AuthorDto;
 import com.libra_s.libraS.dtos.BookDto;
 import com.libra_s.libraS.dtos.AdminBookDto;
 import com.libra_s.libraS.dtos.BookFilterDto;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RequestMapping("/api/admin/books")
@@ -172,4 +174,19 @@ public class AdminBookController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+    
+    @GetMapping("/authors")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllAuthors() {
+        try {
+            List<AuthorDto> authors = bookService.getAllAuthors();
+            return ResponseEntity.ok(authors);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur lors de la récupération des auteurs");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+    
+    
 }
